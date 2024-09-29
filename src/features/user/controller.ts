@@ -73,8 +73,6 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     const refreshToken =
       req?.cookies?.refreshToken || req?.headers?.authorization?.replace('Bearer ', '');
 
-    console.log('Refresh Token:', refreshToken);
-
     if (!refreshToken) {
       return res.status(401).json(handleResponse(401, 'No refresh token provided'));
     }

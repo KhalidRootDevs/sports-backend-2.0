@@ -41,7 +41,7 @@ export const createPlayer = async (req: Request, res: Response, next: NextFuncti
     }
     return res.status(201).json(handleResponse(201, 'Team created successfully', player));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -55,7 +55,7 @@ export const getAllPlayers = async (req: Request, res: Response, next: NextFunct
       .status(200)
       .json(handleResponse(200, 'Selected Players fetched successfully', players));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -74,7 +74,7 @@ export const getPlayerById = async (req: Request, res: Response, next: NextFunct
     }
     return res.status(200).json(handleResponse(200, 'Player fetched successfully', player));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -104,7 +104,7 @@ export const updatePlayer = async (req: Request, res: Response, next: NextFuncti
     });
     return res.status(200).json(handleResponse(200, 'Player updated successfully', updatedPlayer));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -126,7 +126,7 @@ export const deletePlayer = async (req: Request, res: Response, next: NextFuncti
     });
     return res.status(200).json(handleResponse(200, 'Player deleted successfully'));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -147,11 +147,10 @@ export const sortPlayers = async (req: Request, res: Response, next: NextFunctio
     );
     return res.status(200).json(handleResponse(200, 'Players sorted successfully'));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
-
 
 export const searchPlayers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -163,7 +162,10 @@ export const searchPlayers = async (req: Request, res: Response, next: NextFunct
 
     const { data } = await fetchFootballData(`/players/search/${encodeURIComponent(search_query)}`);
 
-    const filtered = data.length > 0 ? data.map((d: any) => ({ id: d.id, name: d.name, logo: d.image_path })) : data;
+    const filtered =
+      data.length > 0
+        ? data.map((d: any) => ({ id: d.id, name: d.name, logo: d.image_path }))
+        : data;
 
     res.status(200).json(handleResponse(200, 'Player search results', filtered));
   } catch (error) {

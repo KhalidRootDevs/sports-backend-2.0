@@ -99,7 +99,7 @@ export const deleteAllHighlights = async (req: Request, res: Response, next: Nex
     });
     res.status(200).json(handleResponse(200, 'All highlights items deleted successfully'));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };

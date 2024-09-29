@@ -39,7 +39,7 @@ export const createTeam = async (req: Request, res: Response, next: NextFunction
     }
     return res.status(201).json(handleResponse(201, 'Team created successfully', team));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -51,7 +51,7 @@ export const getAllTeams = async (req: Request, res: Response, next: NextFunctio
     });
     return res.status(200).json(handleResponse(200, 'Selected Teams fetched successfully', teams));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -70,7 +70,7 @@ export const getTeamById = async (req: Request, res: Response, next: NextFunctio
     }
     return res.status(200).json(handleResponse(200, 'Team fetched successfully', team));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -100,7 +100,7 @@ export const updateTeam = async (req: Request, res: Response, next: NextFunction
     });
     return res.status(200).json(handleResponse(200, 'Team updated successfully', updatedTeam));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -122,7 +122,7 @@ export const deleteTeam = async (req: Request, res: Response, next: NextFunction
     });
     return res.status(200).json(handleResponse(200, 'Team deleted successfully'));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
@@ -143,12 +143,10 @@ export const sortTeams = async (req: Request, res: Response, next: NextFunction)
     );
     return res.status(200).json(handleResponse(200, 'Teams sorted successfully'));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
-
-
 
 export const searchTeams = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -159,7 +157,10 @@ export const searchTeams = async (req: Request, res: Response, next: NextFunctio
     }
 
     const { data } = await fetchFootballData(`/teams/search/${encodeURIComponent(search_query)}`);
-    const filtered = data.length > 0 ? data.map((d: any) => ({ id: d.id, name: d.name, logo: d.image_path })) : data;
+    const filtered =
+      data.length > 0
+        ? data.map((d: any) => ({ id: d.id, name: d.name, logo: d.image_path }))
+        : data;
 
     res.status(200).json(handleResponse(200, 'Teams search results', filtered));
   } catch (error) {

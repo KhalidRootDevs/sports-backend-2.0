@@ -29,7 +29,7 @@ export const getFixtureMonks = async (req: Request, res: Response, next: NextFun
         page += 1;
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
 
     // Fetch selected leagues from the database

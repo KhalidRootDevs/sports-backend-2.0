@@ -81,7 +81,7 @@ export const deleteAllNews = async (req: Request, res: Response, next: NextFunct
     });
     res.status(200).json(handleResponse(200, 'All news items deleted successfully'));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };

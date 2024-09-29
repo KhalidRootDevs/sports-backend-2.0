@@ -188,7 +188,7 @@ export const deleteAllMatch = async (req: Request, res: Response, next: NextFunc
     });
     res.status(200).json(handleResponse(200, 'All matches deleted successfully'));
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
