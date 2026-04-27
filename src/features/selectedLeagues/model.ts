@@ -9,16 +9,14 @@ export interface SelectedLeaguesDocument extends Document {
   position?: number;
 }
 
-const selectedLeaguesSchema = new Schema<SelectedLeaguesDocument>(
-  {
-    id: { type: Number, required: true, unique: true },
-    seasonId: { type: Number },
-    name: { type: String, required: true },
-    logo: { type: String, required: true },
-    status: { type: String, default: '1' },
-    position: { type: Number, default: 9999999 },
-  }
-);
+const selectedLeaguesSchema = new Schema<SelectedLeaguesDocument>({
+  id: { type: Number, required: true, unique: true },
+  seasonId: { type: Number },
+  name: { type: String, required: true },
+  logo: { type: String, required: true },
+  status: { type: String, default: '1' },
+  position: { type: Number, default: 9999999 },
+});
 
 const SelectedLeagues = mongoose.model<SelectedLeaguesDocument>(
   'SelectedLeagues',

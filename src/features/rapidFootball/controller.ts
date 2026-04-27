@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import SelectedLeagues from "../selectedLeagues/model";
-import rapidApiFootballUrl from "../../services/rapidApi";
+import rapidApiFootballUrl from "./services";
 
 
 export async function getFixturesRapid(req: Request, res: Response, next: NextFunction) {

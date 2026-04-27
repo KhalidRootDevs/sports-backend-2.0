@@ -8,11 +8,7 @@ const router = Router();
 router.post('/contact-us', authenticate, createContactUs);
 
 // Get all contact us entries
-router.get(
-  '/contact-us',
-
-  getAllContactUs
-);
+router.get('/contact-us', getAllContactUs);
 
 // Get a single contact us entry by ID
 router.get('/contact-us/:id', getOneContactUs);

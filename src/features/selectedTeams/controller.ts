@@ -3,7 +3,7 @@ import { selectedTeamSchema } from './validator';
 import { handleResponse } from '../../utils/helper';
 import { dbActions } from '../../db/dbActions';
 import SelectedTeam from './model';
-import { fetchFootballData } from '../../services/sportsApi/sportMonkV3';
+import { fetchFootballData } from '../sportsMonk/services';
 
 const CREATE_ALLOWED = new Set([
   'id',

@@ -12,11 +12,10 @@ import notificationsRoutes from '../features/notifications/routes';
 import streamingSourcesRoutes from '../features/stream/routes';
 import userRoutes from '../features/user/routes';
 import sportsMonkRoutes from '../features/sportsMonk/routes';
-import rapidApiRoute from "../features/rapidFootball/route";
-import cricbuzzApiRoute from "../features/cricbuzz/route";
-import selectedTeamRoutes from "../features/selectedTeams/route";
-import selectedPlayerRoutes from "../features/selectedPlayers/route";
-
+import rapidApiRoute from '../features/rapidFootball/route';
+import cricbuzzApiRoute from '../features/cricbuzz/route';
+import selectedTeamRoutes from '../features/selectedTeams/route';
+import selectedPlayerRoutes from '../features/selectedPlayers/route';
 
 const router = Router();
 
@@ -33,8 +32,8 @@ router.use('/selected-leagues', selectedLeaguesRoutes);
 router.use('/selected-teams', selectedTeamRoutes);
 router.use('/selected-players', selectedPlayerRoutes);
 router.use('/notifications', notificationsRoutes);
-router.use("/rapid-football", rapidApiRoute);
-router.use("/cricbuzz", cricbuzzApiRoute);
+router.use('/rapid-football', rapidApiRoute);
+router.use('/cricbuzz', cricbuzzApiRoute);
 
 router.use('/sport-monk', sportsMonkRoutes);
 

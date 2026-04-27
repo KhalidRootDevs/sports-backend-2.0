@@ -4,7 +4,7 @@ import { querySchema } from '../../types';
 import { handleResponse } from '../../utils/helper';
 import SelectedLeagues from './model';
 import { selectedLeaguesSchema } from './validator';
-import { fetchFootballData } from '../../services/sportsApi/sportMonkV3';
+import { fetchFootballData } from '../sportsMonk/services';
 
 // Get all selected leagues
 export const allSelectedLeagues = async (req: Request, res: Response, next: NextFunction) => {

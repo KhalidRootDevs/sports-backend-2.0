@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { dbActions } from '../../db/dbActions';
 import { querySchema } from '../../types';
 import { handleResponse } from '../../utils/helper';
-import { fetchFootballData } from '../../services/sportsApi/sportMonkV3';
+import { fetchFootballData } from './services';
 import SelectedLeagues from '../selectedLeagues/model';
 
 export const getFixtureMonks = async (req: Request, res: Response, next: NextFunction) => {

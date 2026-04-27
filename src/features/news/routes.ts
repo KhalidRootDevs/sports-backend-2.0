@@ -9,6 +9,11 @@ router.post('/create', authenticate, createNews);
 router.get('/all', authenticate, getAllNews);
 router.get('/find/:id', authenticate, getNewsById);
 router.delete('/delete/:id', authenticate, deleteNews);
-router.delete("/deleta-all", authenticate, authorizeRoles([UserRole.ADMIN, UserRole.MODERATOR]), deleteAllNews);
+router.delete(
+  '/delete-all',
+  authenticate,
+  authorizeRoles([UserRole.ADMIN, UserRole.MODERATOR]),
+  deleteAllNews
+);
 
 export default router;

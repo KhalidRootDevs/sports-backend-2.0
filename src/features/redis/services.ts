@@ -12,17 +12,11 @@ class RedisCache {
 
   private async initializeRedisClient(): Promise<void> {
     try {
-      const redisPassword = process.env.REDIS_PASSWORD;
-      const redisHost = process.env.REDIS_HOST;
-      const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
+      const redisUri = process.env.REDIS_URI;
 
-      if (redisPassword && redisHost && redisPort) {
+      if (redisUri) {
         this.redisClient = createClient({
-          password: redisPassword,
-          socket: {
-            host: redisHost,
-            port: redisPort,
-          },
+          url: redisUri,
         });
 
         this.redisClient.on('error', (error: Error) => {
@@ -32,7 +26,7 @@ class RedisCache {
         await this.redisClient.connect();
         console.log('🧱 Connected to Redis successfully!');
       } else {
-        console.warn('🟡 Missing Redis configuration. Cannot initialize Redis client.');
+        console.warn('🟡 Missing Redis URI configuration. Cannot initialize Redis client.');
       }
     } catch (error) {
       console.error('🟠 Failed to initialize Redis client:', error);

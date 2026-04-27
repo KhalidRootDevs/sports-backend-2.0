@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/authenticate';
 import { getFixtureMonks } from './controller';
-import { redisCache } from '../../services/redis';
+import { redisCache } from '../redis/services';
 
 const router = Router();
 

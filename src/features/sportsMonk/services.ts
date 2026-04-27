@@ -3,7 +3,7 @@ config();
 
 import { NextFunction, Request, Response } from 'express';
 import { dbActions } from '../../db/dbActions';
-import SelectedLeagues from '../../features/selectedLeagues/model';
+import SelectedLeagues from '../selectedLeagues/model';
 
 const baseUrl = process.env.SPORTMONKS_FOOTBALL_URL || '';
 const authorizationToken = process.env.SPORTMONKS_TOKEN || '';

@@ -9,7 +9,6 @@ export const createStreaming = (matchData: any) => {
       for (const item of source?.headers || []) {
         headerObject[item.key] = item.value;
       }
-
       return {
         id: generateRandomId(15),
         stream_title: source?.stream_title,

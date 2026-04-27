@@ -2,8 +2,8 @@ import cookieParser from 'cookie-parser';
 import express, { Application, Request, Response } from 'express';
 import cors, { CorsOptions } from 'cors';
 import router from './router';
-import { redisCache } from './services/redis';
-import { monksFootballV3Data } from './services/sportsApi/sportMonkV3';
+import { redisCache } from './features/redis/services';
+import { monksFootballV3Data } from './features/sportsMonk/services';
 import { errorMiddleware, loggerMiddleware, notFoundMiddleware } from './utils/logger';
 import configs from './config/cors';
 
@@ -26,7 +26,7 @@ app.get('/', (req: Request, res: Response) => {
     description: 'Connecting you with the best football insights, live scores, and updates.',
     serverTime: new Date().toISOString(),
     funFact:
-      'Did you know? The fastest goal in football history was scored just 2.4 seconds after kickoff!',
+      'Did you know? The fastest goal in football history was scored just 2.4 seconds after kickoff by Ricardo Oliveira in 1998!',
   };
 
   res.json(welcomeMessage);

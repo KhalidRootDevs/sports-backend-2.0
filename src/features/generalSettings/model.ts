@@ -15,22 +15,20 @@ interface IGeneralSettings extends Document {
   site_icon?: string;
 }
 
-const generalSettingSchema = new Schema<IGeneralSettings>(
-  {
-    company_name: { type: String },
-    site_title: { type: String },
-    timezone: { type: Schema.Types.Mixed },
-    language: { type: Schema.Types.Mixed },
-    terms: { type: String },
-    policy: { type: String },
-    contact_us: { type: String },
-    facebook: { type: String, default: '' },
-    youtube: { type: String, default: '' },
-    instagram: { type: String, default: '' },
-    site_logo: { type: String, default: '' },
-    site_icon: { type: String, default: '' },
-  }
-);
+const generalSettingSchema = new Schema<IGeneralSettings>({
+  company_name: { type: String },
+  site_title: { type: String },
+  timezone: { type: Schema.Types.Mixed },
+  language: { type: Schema.Types.Mixed },
+  terms: { type: String },
+  policy: { type: String },
+  contact_us: { type: String },
+  facebook: { type: String, default: '' },
+  youtube: { type: String, default: '' },
+  instagram: { type: String, default: '' },
+  site_logo: { type: String, default: '' },
+  site_icon: { type: String, default: '' },
+});
 
 const GeneralSettings = mongoose.model<IGeneralSettings>('GeneralSettings', generalSettingSchema);
 
