@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const newsSchema = z.object({
   title: z.string().optional(),
@@ -12,5 +12,5 @@ export const newsSchema = z.object({
   image: z.string().optional(),
   description: z.string().optional(),
   publish_date: z.string().optional(),
-  status: z.string().default('1'),
+  status: z.string().default("1")
 });

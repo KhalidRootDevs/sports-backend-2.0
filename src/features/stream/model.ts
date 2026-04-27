@@ -1,8 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
-export type Platform = 'both' | 'android' | 'ios';
+export type Platform = "both" | "android" | "ios";
 
-export type StreamType = 'root_stream' | 'restricted' | 'm3u8' | 'web';
+export type StreamType = "root_stream" | "restricted" | "m3u8" | "web";
 
 interface RootStreamItem {
   [key: string]: any;
@@ -31,80 +31,80 @@ const streamSchema = new Schema<IStream>(
   {
     matchId: {
       type: Schema.Types.ObjectId,
-      ref: 'LiveMatch',
-      required: [true, 'matchId is required'],
-      index: true,
+      ref: "LiveMatch",
+      required: [true, "matchId is required"],
+      index: true
     },
     id: {
       type: Number,
-      required: [true, 'id is required'],
+      required: [true, "id is required"],
       unique: true,
-      index: true,
+      index: true
     },
     match_id: {
       type: Number,
-      index: true,
+      index: true
     },
     stream_title: {
       type: String,
-      required: [true, 'stream_title is required'],
-      trim: true,
+      required: [true, "stream_title is required"],
+      trim: true
     },
     is_premium: {
       type: Boolean,
-      default: false,
+      default: false
     },
     resolution: {
       type: String,
-      required: [true, 'resolution is required'],
-      trim: true,
+      required: [true, "resolution is required"],
+      trim: true
     },
     stream_status: {
       type: Boolean,
-      default: true,
+      default: true
     },
     platform: {
       type: String,
-      enum: ['both', 'android', 'ios'],
-      default: 'both',
+      enum: ["both", "android", "ios"],
+      default: "both"
     },
     stream_type: {
       type: String,
-      enum: ['root_stream', 'restricted', 'm3u8', 'web'],
-      default: 'root_stream',
+      enum: ["root_stream", "restricted", "m3u8", "web"],
+      default: "root_stream"
     },
     portrait_watermark: {
       type: String,
-      default: '{}',
+      default: "{}"
     },
     landscape_watermark: {
       type: String,
-      default: '{}',
+      default: "{}"
     },
     root_streams: {
       type: [Schema.Types.Mixed],
-      default: [],
+      default: []
     },
     stream_url: {
       type: String,
-      trim: true,
+      trim: true
     },
     headers: {
       type: String,
-      trim: true,
+      trim: true
     },
     stream_key: {
       type: String,
-      trim: true,
+      trim: true
     },
     position: {
       type: Number,
       default: 99999999,
-      index: true,
-    },
+      index: true
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
@@ -115,6 +115,6 @@ streamSchema.index({ matchId: 1, stream_status: 1 });
 streamSchema.index({ match_id: 1, position: 1 });
 streamSchema.index({ platform: 1, stream_type: 1 });
 
-const Stream = mongoose.model<IStream>('Stream', streamSchema);
+const Stream = mongoose.model<IStream>("Stream", streamSchema);
 
 export default Stream;

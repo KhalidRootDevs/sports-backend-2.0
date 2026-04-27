@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IHighlight extends Document {
   title: string;
@@ -20,57 +20,57 @@ const highlightSchema = new Schema<IHighlight>(
   {
     title: {
       type: String,
-      required: true,
+      required: true
     },
     category: {
       type: String,
-      required: true,
+      required: true
     },
     league_id: {
-      type: Number,
+      type: Number
     },
     league_image: {
-      type: String,
+      type: String
     },
     date: {
       type: String,
-      required: true,
+      required: true
     },
     short_description: {
-      type: String,
+      type: String
     },
     video_type: {
       type: String,
-      required: true,
+      required: true
     },
     youtube_url: {
-      type: String,
+      type: String
     },
     thumbnail_type: {
-      type: String,
+      type: String
     },
     highlight_image: {
-      type: String,
+      type: String
     },
     fixture_id: {
       type: String,
-      trim: true,
+      trim: true
     },
     videos: {
-      type: [String],
+      type: [String]
     },
     status: {
       type: String,
-      default: '1',
-    },
+      default: "1"
+    }
   },
   {
     timestamps: true,
-    versionKey: false,
+    versionKey: false
   }
 );
 
 // Create the model for Highlight
-const Highlight = mongoose.model<IHighlight>('Highlight', highlightSchema);
+const Highlight = mongoose.model<IHighlight>("Highlight", highlightSchema);
 
 export default Highlight;

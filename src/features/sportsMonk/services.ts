@@ -1,24 +1,24 @@
-import { config } from 'dotenv';
+import { config } from "dotenv";
 config();
 
-import { NextFunction, Request, Response } from 'express';
-import { dbActions } from '../../db/dbActions';
-import SelectedLeagues from '../selectedLeagues/model';
+import { NextFunction, Request, Response } from "express";
+import { dbActions } from "../../db/dbActions";
+import SelectedLeagues from "../selectedLeagues/model";
 
-const baseUrl = process.env.CACHE_SERVER_URL_SPORTMONK || '';
-const authorizationToken = process.env.CACHE_SERVER_TOKEN || '';
+const baseUrl = process.env.CACHE_SERVER_URL_SPORTMONK || "";
+const authorizationToken = process.env.CACHE_SERVER_TOKEN || "";
 
 export async function fetchFootballData(endpoint: string) {
   const url = `${baseUrl}${endpoint}`;
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      'Authorization': authorizationToken,
-    },
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      Authorization: authorizationToken
+    }
   });
 
   if (!response.ok) {
@@ -31,28 +31,26 @@ export async function fetchFootballData(endpoint: string) {
 }
 
 export async function monksFootballV3Data(req: Request, res: Response, next: NextFunction) {
-  const removedPrefixUrl = req.originalUrl.replace('/football/v3', '');
-  let urlEndpoint = removedPrefixUrl.split('?')[0];
-  const urlQueryString = removedPrefixUrl.split('?')[1];
+  const removedPrefixUrl = req.originalUrl.replace("/football/v3", "");
+  let urlEndpoint = removedPrefixUrl.split("?")[0];
+  const urlQueryString = removedPrefixUrl.split("?")[1];
   const mainUrl = urlQueryString ? `${urlEndpoint}?${urlQueryString}` : urlEndpoint;
 
   try {
-    if (urlEndpoint.includes('leagues')) {
+    if (urlEndpoint.includes("leagues")) {
       const data = await fetchFootballData(mainUrl);
       const selectedLeagues = await dbActions.readEvery(SelectedLeagues, {
-        sort: { position: 1 },
+        sort: { position: 1 }
       });
 
       const filteredLeagues = selectedLeagues?.reduce((result: any[], selectedLeague: any) => {
-        const matchingLeagues = data?.response?.filter(
-          (league: any) => selectedLeague.id === league.league.id
-        );
+        const matchingLeagues = data?.response?.filter((league: any) => selectedLeague.id === league.league.id);
         return result.concat(matchingLeagues);
       }, []);
 
       const finalData = {
         ...data,
-        response: filteredLeagues,
+        response: filteredLeagues
       };
 
       return res.json(finalData);

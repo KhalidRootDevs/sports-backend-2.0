@@ -1,4 +1,4 @@
-import { Document, FilterQuery, Model, PopulateOptions, UpdateQuery } from 'mongoose';
+import { Document, FilterQuery, Model, PopulateOptions, UpdateQuery } from "mongoose";
 
 interface PaginationOptions {
   page?: number;
@@ -40,10 +40,7 @@ interface DbActions<T extends Document> {
   ) => Promise<T | null>;
   readAll: (model: Model<T>, options: ReadAllOptions<T>) => Promise<PaginatedResult<T>>;
   readEvery: (model: Model<T>, options: ReadEveryData<T>) => Promise<T[]>;
-  update: (
-    model: Model<T>,
-    options: { query: FilterQuery<T>; update: UpdateQuery<T> }
-  ) => Promise<T | null>;
+  update: (model: Model<T>, options: { query: FilterQuery<T>; update: UpdateQuery<T> }) => Promise<T | null>;
   delete: (model: Model<T>, options: { query: FilterQuery<T> }) => Promise<T | null>;
   deleteMany: (model: Model<T>, query: FilterQuery<T>) => Promise<{ deletedCount?: number }>;
   aggregate: (model: Model<T>, pipeline: any[]) => Promise<any[]>;
@@ -58,10 +55,7 @@ export const dbActions: DbActions<any> = {
     return await model.findOne(query).populate(includes).lean();
   },
 
-  async readAll(
-    model,
-    { query = {}, projection = {}, sort = {}, filter = {}, pagination = {}, includes = [] }
-  ) {
+  async readAll(model, { query = {}, projection = {}, sort = {}, filter = {}, pagination = {}, includes = [] }) {
     const { page = 1, limit = 10 } = pagination;
 
     // Combine query and filter for better optimization
@@ -93,7 +87,7 @@ export const dbActions: DbActions<any> = {
       hasNextPage,
       hasPrevPage,
       nextPage,
-      prevPage,
+      prevPage
     };
   },
 
@@ -113,5 +107,5 @@ export const dbActions: DbActions<any> = {
   },
   async aggregate(model, pipeline) {
     return await model.aggregate(pipeline).exec();
-  },
+  }
 };

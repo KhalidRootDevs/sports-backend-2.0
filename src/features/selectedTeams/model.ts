@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 export interface TeamDocument extends Document {
   id: number;
@@ -16,21 +16,21 @@ const schema = new Schema<TeamDocument>({
   seasonId: { type: Number },
   name: {
     type: String,
-    required: true,
+    required: true
   },
   logo: {
     type: String,
-    required: true,
+    required: true
   },
   status: {
     type: String,
-    default: '1',
+    default: "1"
   },
   newsUrl: { type: String },
   channelId: { type: String },
-  position: { type: Number, default: 9999999 },
+  position: { type: Number, default: 9999999 }
 });
 
-const SelectedTeam = model<TeamDocument>('SelectedTeam', schema, 'selected-teams');
+const SelectedTeam = model<TeamDocument>("SelectedTeam", schema, "selected-teams");
 
 export default SelectedTeam;

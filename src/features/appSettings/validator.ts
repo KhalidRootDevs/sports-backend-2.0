@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Schema for app settings validation
 export const appSettingsSchema = z.object({
-  name: z.string().min(1, 'Name is required').trim(),
-  uniqueId: z.string().min(1, 'Unique ID is required').trim(),
-  status: z.string().default('1'),
-  logo: z.string().default(''),
+  name: z.string().min(1, "Name is required").trim(),
+  uniqueId: z.string().min(1, "Unique ID is required").trim(),
+  status: z.string().default("1"),
+  logo: z.string().default(""),
 
   notificationSettings: z
     .object({
@@ -15,7 +15,7 @@ export const appSettingsSchema = z.object({
           onesignalAppId: z.string().optional(),
           onesignalApiKey: z.string().optional(),
           firebaseServerKey: z.string().optional(),
-          firebaseTopics: z.string().optional(),
+          firebaseTopics: z.string().optional()
         })
         .optional(),
       ios: z
@@ -24,9 +24,9 @@ export const appSettingsSchema = z.object({
           onesignalAppId: z.string().optional(),
           onesignalApiKey: z.string().optional(),
           firebaseServerKey: z.string().optional(),
-          firebaseTopics: z.string().optional(),
+          firebaseTopics: z.string().optional()
         })
-        .optional(),
+        .optional()
     })
     .optional(),
 
@@ -35,9 +35,9 @@ export const appSettingsSchema = z.object({
       sport: z
         .object({
           baseUrl: z.string().optional(),
-          apiKey: z.string().optional(),
+          apiKey: z.string().optional()
         })
-        .optional(),
+        .optional()
     })
     .optional(),
 
@@ -52,9 +52,9 @@ export const appSettingsSchema = z.object({
           port: z.string().optional(),
           username: z.string().optional(),
           password: z.string().optional(),
-          encryption: z.string().optional(),
+          encryption: z.string().optional()
         })
-        .optional(),
+        .optional()
     })
     .optional(),
 
@@ -64,7 +64,7 @@ export const appSettingsSchema = z.object({
       instagram: z.string().optional(),
       twitter: z.string().optional(),
       telegram: z.string().optional(),
-      youtube: z.string().optional(),
+      youtube: z.string().optional()
     })
     .optional(),
 
@@ -86,7 +86,7 @@ export const appSettingsSchema = z.object({
             onesignalAppId: z.string().optional(),
             onesignalApiKey: z.string().optional(),
             firebaseServerKey: z.string().optional(),
-            firebaseTopics: z.string().optional(),
+            firebaseTopics: z.string().optional()
           })
         )
         .optional(),
@@ -97,7 +97,7 @@ export const appSettingsSchema = z.object({
             onesignalAppId: z.string().optional(),
             onesignalApiKey: z.string().optional(),
             firebaseServerKey: z.string().optional(),
-            firebaseTopics: z.string().optional(),
+            firebaseTopics: z.string().optional()
           })
         )
         .optional(),
@@ -105,18 +105,18 @@ export const appSettingsSchema = z.object({
       adStatus: z.string().optional(),
       versionName: z.string().optional(),
       versionCode: z.string().optional(),
-      forceUpdate: z.string().default('no'),
-      updateFor: z.string().default('in'),
+      forceUpdate: z.string().default("no"),
+      updateFor: z.string().default("in"),
       appUrl: z.string().optional(),
       buttonText: z.string().optional(),
       description: z.string().optional(),
       requiredApp: z
         .object({
-          enable: z.string().default('no'),
+          enable: z.string().default("no"),
           applicationId: z.string().optional(),
           url: z.string().optional(),
           name: z.string().optional(),
-          description: z.string().optional(),
+          description: z.string().optional()
         })
         .optional(),
       promo: z
@@ -124,7 +124,7 @@ export const appSettingsSchema = z.object({
           button: z.string().optional(),
           text: z.string().optional(),
           link: z.string().optional(),
-          status: z.string().optional(),
+          status: z.string().optional()
         })
         .optional(),
       adSettings: z
@@ -133,9 +133,9 @@ export const appSettingsSchema = z.object({
           onesignalAppId: z.string().optional(),
           onesignalApiKey: z.string().optional(),
           firebaseServerKey: z.string().optional(),
-          firebaseTopics: z.string().optional(),
+          firebaseTopics: z.string().optional()
         })
-        .optional(),
+        .optional()
     })
     .optional(),
 
@@ -156,7 +156,7 @@ export const appSettingsSchema = z.object({
             onesignalAppId: z.string().optional(),
             onesignalApiKey: z.string().optional(),
             firebaseServerKey: z.string().optional(),
-            firebaseTopics: z.string().optional(),
+            firebaseTopics: z.string().optional()
           })
         )
         .optional(),
@@ -168,7 +168,7 @@ export const appSettingsSchema = z.object({
             onesignalAppId: z.string().optional(),
             onesignalApiKey: z.string().optional(),
             firebaseServerKey: z.string().optional(),
-            firebaseTopics: z.string().optional(),
+            firebaseTopics: z.string().optional()
           })
         )
         .optional(),
@@ -177,18 +177,18 @@ export const appSettingsSchema = z.object({
       adStatus: z.string().optional(),
       versionName: z.string().optional(),
       versionCode: z.string().optional(),
-      forceUpdate: z.string().default('no'),
-      updateFor: z.string().default('in'),
+      forceUpdate: z.string().default("no"),
+      updateFor: z.string().default("in"),
       appUrl: z.string().optional(),
       buttonText: z.string().optional(),
       description: z.string().optional(),
       requiredApp: z
         .object({
-          enable: z.string().default('no'),
+          enable: z.string().default("no"),
           applicationId: z.string().optional(),
           url: z.string().optional(),
           name: z.string().optional(),
-          description: z.string().optional(),
+          description: z.string().optional()
         })
         .optional(),
       promo: z
@@ -196,12 +196,12 @@ export const appSettingsSchema = z.object({
           button: z.string().optional(),
           text: z.string().optional(),
           link: z.string().optional(),
-          status: z.string().optional(),
+          status: z.string().optional()
         })
         .optional(),
-      adSettings: z.object({}).optional(),
+      adSettings: z.object({}).optional()
     })
     .optional(),
 
-  ip: z.string().optional(),
+  ip: z.string().optional()
 });

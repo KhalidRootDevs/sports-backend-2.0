@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 interface IContactUs extends Document {
   email: string;
@@ -14,31 +14,31 @@ const contactUsSchema = new Schema<IContactUs>(
       required: true,
       trim: true,
       lowercase: true,
-      match: /^\S+@\S+\.\S+$/,
+      match: /^\S+@\S+\.\S+$/
     },
     name: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
     subject: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
     message: {
       type: String,
       required: true,
-      trim: true,
-    },
+      trim: true
+    }
   },
   {
     timestamps: true,
-    versionKey: false,
+    versionKey: false
   }
 );
 
 // Create the model for ContactUs
-const ContactUs = mongoose.model<IContactUs>('ContactUs', contactUsSchema);
+const ContactUs = mongoose.model<IContactUs>("ContactUs", contactUsSchema);
 
 export default ContactUs;

@@ -1,4 +1,4 @@
-import { generateRandomId } from '../../utils';
+import { generateRandomId } from "../../utils";
 
 // Function to create streaming sources
 export const createStreaming = (matchData: any) => {
@@ -22,7 +22,7 @@ export const createStreaming = (matchData: any) => {
         root_streams: source?.root_streams,
         headers: JSON.stringify(headerObject),
         stream_key: source?.stream_key,
-        stream_status: source?.stream_status,
+        stream_status: source?.stream_status
       };
     }) || []
   );

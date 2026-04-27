@@ -1,17 +1,15 @@
-import jwt from 'jsonwebtoken';
-import { UserRole } from '../features/user/model';
+import jwt from "jsonwebtoken";
+import { UserRole } from "../features/user/model";
 
-export const generateToken = (userId: string, role: UserRole, type: 'access' | 'refresh') => {
-  const secret =
-    type === 'access' ? process.env.ACCESS_TOKEN_SECRET : process.env.REFRESH_TOKEN_SECRET;
-  const expiresIn = type === 'access' ? '15m' : '7d';
+export const generateToken = (userId: string, role: UserRole, type: "access" | "refresh") => {
+  const secret = type === "access" ? process.env.ACCESS_TOKEN_SECRET : process.env.REFRESH_TOKEN_SECRET;
+  const expiresIn = type === "access" ? "15m" : "7d";
 
   return jwt.sign({ userId, role }, secret as string, { expiresIn });
 };
 
-export const verifyToken = (token: string, type: 'access' | 'refresh') => {
-  const secret =
-    type === 'access' ? process.env.ACCESS_TOKEN_SECRET : process.env.REFRESH_TOKEN_SECRET;
+export const verifyToken = (token: string, type: "access" | "refresh") => {
+  const secret = type === "access" ? process.env.ACCESS_TOKEN_SECRET : process.env.REFRESH_TOKEN_SECRET;
 
   return new Promise((resolve, reject) => {
     jwt.verify(token, secret as string, (err, decoded) => {
@@ -25,8 +23,8 @@ export const verifyToken = (token: string, type: 'access' | 'refresh') => {
 };
 
 export const generateRandomId = (length: number) => {
-  let result = '';
-  const characters = '123456789';
+  let result = "";
+  const characters = "123456789";
   const charactersLength = characters.length;
   let counter = 0;
   while (counter < length) {

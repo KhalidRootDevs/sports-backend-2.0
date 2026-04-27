@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
-import { dbActions } from '../../db/dbActions';
-import { handleResponse } from '../../utils/helper';
-import { defaultAppSettings } from './defaultAppSettings';
-import AppSettings from './model';
-import { appSettingsSchema } from './validator';
+import { NextFunction, Request, Response } from "express";
+import { dbActions } from "../../db/dbActions";
+import { handleResponse } from "../../utils/helper";
+import { defaultAppSettings } from "./defaultAppSettings";
+import AppSettings from "./model";
+import { appSettingsSchema } from "./validator";
 
 export const getSettings = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -13,9 +13,9 @@ export const getSettings = async (req: Request, res: Response, next: NextFunctio
       const defaultSettings = new AppSettings();
       await dbActions.create(AppSettings, defaultAppSettings);
 
-      return res.status(200).json(handleResponse(200, 'App settings fetched', defaultSettings));
+      return res.status(200).json(handleResponse(200, "App settings fetched", defaultSettings));
     }
-    res.status(200).json(handleResponse(200, 'App settings fetched', settings));
+    res.status(200).json(handleResponse(200, "App settings fetched", settings));
   } catch (error) {
     console.error(error);
     next(error);
@@ -31,13 +31,13 @@ export const updateSettings = async (req: Request, res: Response, next: NextFunc
       // Update existing settings
       const updatedSettings = await dbActions.update(AppSettings, {
         query: { _id: existingSettings._id },
-        update: settingsData,
+        update: settingsData
       });
-      return res.status(200).json(handleResponse(200, 'Settings updated', updatedSettings));
+      return res.status(200).json(handleResponse(200, "Settings updated", updatedSettings));
     } else {
       // Create new settings
       const newSettings = await dbActions.create(AppSettings, settingsData);
-      return res.status(201).json(handleResponse(201, 'Settings created', newSettings));
+      return res.status(201).json(handleResponse(201, "Settings created", newSettings));
     }
   } catch (error) {
     console.error(error);
@@ -48,7 +48,7 @@ export const updateSettings = async (req: Request, res: Response, next: NextFunc
 export const resetSettings = async (req: Request, res: Response, next: NextFunction) => {
   try {
     await dbActions.delete(AppSettings, { query: {} });
-    res.status(200).json(handleResponse(200, 'Settings reset successfully'));
+    res.status(200).json(handleResponse(200, "Settings reset successfully"));
   } catch (error) {
     console.error(error);
     next(error);

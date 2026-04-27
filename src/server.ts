@@ -1,8 +1,8 @@
-import { config } from 'dotenv';
+import { config } from "dotenv";
 config();
-import app from './app';
-import connectDB from './db/database';
-import { initializeRedisClient } from './features/redis/services';
+import app from "./app";
+import connectDB from "./db/database";
+import { initializeRedisClient } from "./services/redis";
 
 (async () => {
   try {
@@ -13,7 +13,7 @@ import { initializeRedisClient } from './features/redis/services';
       console.log(`🟢 Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('🔴 Failed to connect to the database', error);
+    console.error("🔴 Failed to connect to the database", error);
     process.exit(1);
   }
 })();

@@ -1,5 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import { defaultAppSettings } from './defaultAppSettings';
+import mongoose, { Document, Schema } from "mongoose";
+import { defaultAppSettings } from "./defaultAppSettings";
 
 interface NotificationSettings {
   android: {
@@ -140,29 +140,29 @@ const appSettingsSchema = new Schema<IAppSettings>(
   {
     name: { type: String, required: true, unique: true },
     uniqueId: { type: String, required: true, unique: true },
-    status: { type: String, default: '1' },
-    logo: { type: String, default: '' },
+    status: { type: String, default: "1" },
+    logo: { type: String, default: "" },
     notificationSettings: {
       android: {
         type: { type: String },
         onesignalAppId: { type: String },
         onesignalApiKey: { type: String },
         firebaseServerKey: { type: String },
-        firebaseTopics: { type: String },
+        firebaseTopics: { type: String }
       },
       ios: {
         type: { type: String },
         onesignalAppId: { type: String },
         onesignalApiKey: { type: String },
         firebaseServerKey: { type: String },
-        firebaseTopics: { type: String },
-      },
+        firebaseTopics: { type: String }
+      }
     },
     apiSettings: {
       sport: {
         baseUrl: { type: String },
-        apiKey: { type: String },
-      },
+        apiKey: { type: String }
+      }
     },
     emailSettings: {
       supportEmail: { type: String },
@@ -173,15 +173,15 @@ const appSettingsSchema = new Schema<IAppSettings>(
         port: { type: String },
         username: { type: String },
         password: { type: String },
-        encryption: { type: String },
-      },
+        encryption: { type: String }
+      }
     },
     socialMedia: {
       facebook: { type: String },
       instagram: { type: String },
       twitter: { type: String },
       telegram: { type: String },
-      youtube: { type: String },
+      youtube: { type: String }
     },
     androidSettings: {
       privacyPolicy: { type: String },
@@ -199,25 +199,25 @@ const appSettingsSchema = new Schema<IAppSettings>(
       adStatus: { type: String },
       versionName: { type: String },
       versionCode: { type: String },
-      forceUpdate: { type: String, default: 'no' },
-      updateFor: { type: String, default: 'in' },
+      forceUpdate: { type: String, default: "no" },
+      updateFor: { type: String, default: "in" },
       appUrl: { type: String },
       buttonText: { type: String },
       description: { type: String },
       requiredApp: {
-        enable: { type: String, default: 'no' },
+        enable: { type: String, default: "no" },
         applicationId: { type: String },
         url: { type: String },
         name: { type: String },
-        description: { type: String },
+        description: { type: String }
       },
       promo: {
         button: { type: String },
         text: { type: String },
         link: { type: String },
-        status: { type: String },
+        status: { type: String }
       },
-      adSettings: { type: Schema.Types.Mixed },
+      adSettings: { type: Schema.Types.Mixed }
     },
     iosSettings: {
       privacyPolicy: { type: String },
@@ -236,34 +236,34 @@ const appSettingsSchema = new Schema<IAppSettings>(
       adStatus: { type: String },
       versionName: { type: String },
       versionCode: { type: String },
-      forceUpdate: { type: String, default: 'no' },
-      updateFor: { type: String, default: 'in' },
+      forceUpdate: { type: String, default: "no" },
+      updateFor: { type: String, default: "in" },
       appUrl: { type: String },
       buttonText: { type: String },
       description: { type: String },
       requiredApp: {
-        enable: { type: String, default: 'no' },
+        enable: { type: String, default: "no" },
         applicationId: { type: String },
         url: { type: String },
         name: { type: String },
-        description: { type: String },
+        description: { type: String }
       },
       promo: {
         button: { type: String },
         text: { type: String },
         link: { type: String },
-        status: { type: String },
+        status: { type: String }
       },
-      adSettings: { type: Schema.Types.Mixed },
+      adSettings: { type: Schema.Types.Mixed }
     },
-    ip: { type: String },
+    ip: { type: String }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-appSettingsSchema.pre('save', async function (next) {
+appSettingsSchema.pre("save", async function (next) {
   const appSettings = this as any;
 
   if (!appSettings.isNew) {
@@ -277,6 +277,6 @@ appSettingsSchema.pre('save', async function (next) {
   next();
 });
 
-const AppSettings = mongoose.model<IAppSettings>('AppSettings', appSettingsSchema);
+const AppSettings = mongoose.model<IAppSettings>("AppSettings", appSettingsSchema);
 
 export default AppSettings;

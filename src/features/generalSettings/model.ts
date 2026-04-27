@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 interface IGeneralSettings extends Document {
   company_name?: string;
@@ -23,13 +23,13 @@ const generalSettingSchema = new Schema<IGeneralSettings>({
   terms: { type: String },
   policy: { type: String },
   contact_us: { type: String },
-  facebook: { type: String, default: '' },
-  youtube: { type: String, default: '' },
-  instagram: { type: String, default: '' },
-  site_logo: { type: String, default: '' },
-  site_icon: { type: String, default: '' },
+  facebook: { type: String, default: "" },
+  youtube: { type: String, default: "" },
+  instagram: { type: String, default: "" },
+  site_logo: { type: String, default: "" },
+  site_icon: { type: String, default: "" }
 });
 
-const GeneralSettings = mongoose.model<IGeneralSettings>('GeneralSettings', generalSettingSchema);
+const GeneralSettings = mongoose.model<IGeneralSettings>("GeneralSettings", generalSettingSchema);
 
 export default GeneralSettings;

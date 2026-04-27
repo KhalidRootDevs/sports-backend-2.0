@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface SelectedLeaguesDocument extends Document {
   id: number;
@@ -14,13 +14,10 @@ const selectedLeaguesSchema = new Schema<SelectedLeaguesDocument>({
   seasonId: { type: Number },
   name: { type: String, required: true },
   logo: { type: String, required: true },
-  status: { type: String, default: '1' },
-  position: { type: Number, default: 9999999 },
+  status: { type: String, default: "1" },
+  position: { type: Number, default: 9999999 }
 });
 
-const SelectedLeagues = mongoose.model<SelectedLeaguesDocument>(
-  'SelectedLeagues',
-  selectedLeaguesSchema
-);
+const SelectedLeagues = mongoose.model<SelectedLeaguesDocument>("SelectedLeagues", selectedLeaguesSchema);
 
 export default SelectedLeagues;

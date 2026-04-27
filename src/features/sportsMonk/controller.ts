@@ -1,16 +1,16 @@
-import { NextFunction, Request, Response } from 'express';
-import { dbActions } from '../../db/dbActions';
-import { querySchema } from '../../types';
-import { handleResponse } from '../../utils/helper';
-import { fetchFootballData } from './services';
-import SelectedLeagues from '../selectedLeagues/model';
+import { NextFunction, Request, Response } from "express";
+import { dbActions } from "../../db/dbActions";
+import { querySchema } from "../../types";
+import { handleResponse } from "../../utils/helper";
+import { fetchFootballData } from "./services";
+import SelectedLeagues from "../selectedLeagues/model";
 
 export const getFixtureMonks = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { date } = req.body;
 
     if (!date) {
-      return res.status(400).json(handleResponse(400, 'Date is required'));
+      return res.status(400).json(handleResponse(400, "Date is required"));
     }
 
     let page: number = 1,
@@ -34,7 +34,7 @@ export const getFixtureMonks = async (req: Request, res: Response, next: NextFun
 
     // Fetch selected leagues from the database
     const selectedLeagues = await dbActions.readEvery(SelectedLeagues, {
-      sort: { position: 1 },
+      sort: { position: 1 }
     });
 
     const selectedLeagueIds = new Set(selectedLeagues.map((l) => l.id));
@@ -50,7 +50,7 @@ export const getFixtureMonks = async (req: Request, res: Response, next: NextFun
             id: leagueId,
             name: fixture.league.name,
             image: fixture.league.image_path,
-            fixtures: [],
+            fixtures: []
           };
         }
         leagueMap[leagueId].fixtures.push(fixture);
@@ -59,9 +59,9 @@ export const getFixtureMonks = async (req: Request, res: Response, next: NextFun
 
     data = Object.values(leagueMap);
 
-    res.status(200).json(handleResponse(200, 'Formatted fixture list', data));
+    res.status(200).json(handleResponse(200, "Formatted fixture list", data));
   } catch (error) {
-    console.error('Error fetching fixtures:', error);
+    console.error("Error fetching fixtures:", error);
     next(error);
   }
 };

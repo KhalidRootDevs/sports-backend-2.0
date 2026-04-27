@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const selectedPlayerSchema = z.object({
   id: z.number(),
@@ -7,8 +7,8 @@ export const selectedPlayerSchema = z.object({
   team_logo: z.string().optional(),
   nationality_logo: z.string().optional(),
   player_position: z.string(),
-  status: z.string().default('1'),
+  status: z.string().default("1"),
   newsUrl: z.string().optional(),
   channelId: z.string(),
-  position: z.number().default(9999999),
+  position: z.number().default(9999999)
 });

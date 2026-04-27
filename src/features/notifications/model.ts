@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface NotificationDocument extends Document {
   id: number;
@@ -15,14 +15,14 @@ const notificationSchema = new Schema<NotificationDocument>(
     title: { type: String, required: true },
     body: { type: String, required: true },
     image: { type: String },
-    notification_type: { type: String, default: 'in_app' },
-    action_url: { type: String },
+    notification_type: { type: String, default: "in_app" },
+    action_url: { type: String }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-const Notification = mongoose.model<NotificationDocument>('Notification', notificationSchema);
+const Notification = mongoose.model<NotificationDocument>("Notification", notificationSchema);
 
 export default Notification;
