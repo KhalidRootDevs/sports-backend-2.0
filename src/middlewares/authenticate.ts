@@ -8,6 +8,7 @@ declare global {
     interface Request {
       userId?: string;
       userRole?: UserRole;
+      userIp?: string;
     }
   }
 }
@@ -42,4 +43,30 @@ const authorizeRoles = (roles: UserRole[]) => {
   };
 };
 
-export { authenticate, authorizeRoles };
+const verifyProxyApi = (req: Request, res: Response, next: NextFunction): void => {
+  const TOKEN = req.headers["token"];
+  if (TOKEN !== process.env["SPORTS_TOKEN"]) {
+    res.status(401).json({ status: false, message: "Unauthorized: Please provide valid Token!" });
+    return;
+  }
+  next();
+};
+
+const verifyWebApi = (req: Request, res: Response, next: NextFunction): void => {
+  const TOKEN = req.headers["token"];
+  if (TOKEN !== process.env["TOKEN"]) {
+    res.status(401).json({ status: false, message: "Unauthorized: Please provide valid Token!" });
+    return;
+  }
+  next();
+};
+
+const verifyMobileApi = (req: Request, res: Response, next: NextFunction): void => {
+  const TOKEN = req.headers["token"];
+  if (TOKEN !== process.env["MOBILE_TOKEN"]) {
+    res.status(401).json({ status: false, message: "Unauthorized: Please provide valid Token!" });
+    return;
+  }
+  next();
+};
+export { authenticate, authorizeRoles, verifyProxyApi, verifyWebApi, verifyMobileApi };

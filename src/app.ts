@@ -1,11 +1,12 @@
 import cookieParser from "cookie-parser";
 import express, { Application, Request, Response } from "express";
 import cors, { CorsOptions } from "cors";
-import router from "./router";
-import { redisCachingMiddleware } from "./services/redis";
-import { monksFootballV3Data } from "./features/sportsMonk/services";
+import webRouter from "./router/webRoutes";
+import proxyRouter from "./router/proxyRoutes";
+import mobileRouter from "./router/mobileRoutes";
 import { errorMiddleware, loggerMiddleware, notFoundMiddleware } from "./utils/logger";
 import configs from "./config/cors";
+import userIpMiddleware from "./middlewares/userIP";
 
 const app: Application = express();
 const env = process.env.NODE_ENV || "development";
@@ -18,6 +19,7 @@ app.use(cors(corsOptions));
 app.use(loggerMiddleware);
 app.use(express.json());
 app.use(cookieParser());
+app.use(userIpMiddleware);
 
 // Root Route
 app.get("/", (req: Request, res: Response) => {
@@ -33,9 +35,10 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // API Routes
-app.use("/api", router);
-// Sports routes
-app.get("/football/v3/*", redisCachingMiddleware(), monksFootballV3Data);
+app.use("/api/web", webRouter);
+app.use("/api/mobile", mobileRouter);
+app.use("/api/sports", proxyRouter);
+
 // 404 Routes
 app.use(notFoundMiddleware);
 // Error middleware

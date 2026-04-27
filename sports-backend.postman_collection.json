@@ -1,1157 +1,1083 @@
 {
   "info": {
     "name": "Sports Backend 2.0",
-    "description": "Complete API collection for Sports Backend 2.0. Base URL: http://localhost:7000. Auth uses JWT via Authorization header or accessToken cookie. Roles: admin, moderator, user.",
+    "description": "Sports Backend 2.0 — three API surfaces:\n\n• Web API (/api/web/*) — requires `token: {{webToken}}` header. User-authenticated routes also need `Authorization: Bearer {{accessToken}}`.\n• Mobile API (/api/mobile/*) — requires `token: {{mobileToken}}` header.\n• Proxy/Sports API (/api/sports/*) — requires `token: {{sportsToken}}` header.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "sports-backend-2-0"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:7000", "type": "string" },
-    { "key": "accessToken", "value": "", "type": "string" },
-    { "key": "refreshToken", "value": "", "type": "string" }
-  ],
-  "auth": {
-    "type": "bearer",
-    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
-  },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [""]
-      }
-    }
+    { "key": "baseUrl",     "value": "http://localhost:7000", "type": "string" },
+    { "key": "webToken",    "value": "",                      "type": "string", "description": "Value of TOKEN env var" },
+    { "key": "mobileToken", "value": "",                      "type": "string", "description": "Value of MOBILE_TOKEN env var" },
+    { "key": "sportsToken", "value": "",                      "type": "string", "description": "Value of SPORTS_TOKEN env var" },
+    { "key": "accessToken", "value": "",                      "type": "string", "description": "JWT from login response — auto-set by Login request" },
+    { "key": "refreshToken","value": "",                      "type": "string", "description": "JWT from login response — auto-set by Login request" }
   ],
   "item": [
+
     {
-      "name": "01 - Auth & User",
-      "description": "User registration, login, token refresh, and profile management.",
+      "name": "🌐 Web API",
+      "description": "All routes under /api/web. Every request requires the `token: {{webToken}}` header (verifyWebApi middleware). Routes marked [AUTH] additionally require `Authorization: Bearer {{accessToken}}`.",
       "item": [
+
         {
-          "name": "Register",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/user/register", "host": ["{{baseUrl}}"], "path": ["api", "user", "register"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"user\",\n  \"image\": null,\n  \"permissions\": {\n    \"canRead\": true,\n    \"canWrite\": false,\n    \"canDelete\": false\n  },\n  \"isActive\": true\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "description": "Register new user. Role defaults to 'user'. Password min 6 chars."
-          },
-          "event": [
+          "name": "Auth & User",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const res = pm.response.json();",
-                  "if (res.data && res.data.accessToken) {",
-                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
-                  "  pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
-                  "}"
+              "name": "Register",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "token",        "value": "{{webToken}}" },
+                  { "key": "Content-Type", "value": "application/json" }
                 ],
-                "type": "text/javascript"
+                "url": { "raw": "{{baseUrl}}/api/web/user/register", "host": ["{{baseUrl}}"], "path": ["api","web","user","register"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"user\",\n  \"image\": null,\n  \"permissions\": { \"canRead\": true, \"canWrite\": false, \"canDelete\": false },\n  \"isActive\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              },
+              "event": [{ "listen": "test", "script": { "exec": ["const r=pm.response.json();if(r.data?.accessToken){pm.collectionVariables.set('accessToken',r.data.accessToken);pm.collectionVariables.set('refreshToken',r.data.refreshToken);}"], "type": "text/javascript" } }]
+            },
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "token",        "value": "{{webToken}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{baseUrl}}/api/web/user/login", "host": ["{{baseUrl}}"], "path": ["api","web","user","login"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "accessToken expires in 15m. refreshToken expires in 7d."
+              },
+              "event": [{ "listen": "test", "script": { "exec": ["const r=pm.response.json();if(r.data?.accessToken){pm.collectionVariables.set('accessToken',r.data.accessToken);pm.collectionVariables.set('refreshToken',r.data.refreshToken);}"], "type": "text/javascript" } }]
+            },
+            {
+              "name": "Refresh Token",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "token",         "value": "{{webToken}}" },
+                  { "key": "Authorization", "value": "Bearer {{refreshToken}}" }
+                ],
+                "url": { "raw": "{{baseUrl}}/api/web/user/refresh", "host": ["{{baseUrl}}"], "path": ["api","web","user","refresh"] }
+              },
+              "event": [{ "listen": "test", "script": { "exec": ["const r=pm.response.json();if(r.data?.accessToken){pm.collectionVariables.set('accessToken',r.data.accessToken);}"], "type": "text/javascript" } }]
+            },
+            {
+              "name": "Forgot Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "token",        "value": "{{webToken}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{baseUrl}}/api/web/user/forgot-password", "host": ["{{baseUrl}}"], "path": ["api","web","user","forgot-password"] },
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@example.com\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Change Password [AUTH]",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "token",         "value": "{{webToken}}" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+                  { "key": "Content-Type",  "value": "application/json" }
+                ],
+                "url": { "raw": "{{baseUrl}}/api/web/user/change-password", "host": ["{{baseUrl}}"], "path": ["api","web","user","change-password"] },
+                "body": { "mode": "raw", "raw": "{\n  \"oldPassword\": \"password123\",\n  \"newPassword\": \"newpassword456\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Get My Profile [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "token",         "value": "{{webToken}}" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "url": { "raw": "{{baseUrl}}/api/web/user/me", "host": ["{{baseUrl}}"], "path": ["api","web","user","me"] }
+              }
+            },
+            {
+              "name": "Update Profile [AUTH]",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "token",         "value": "{{webToken}}" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+                  { "key": "Content-Type",  "value": "application/json" }
+                ],
+                "url": { "raw": "{{baseUrl}}/api/web/user/profile", "host": ["{{baseUrl}}"], "path": ["api","web","user","profile"] },
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"John Updated\",\n  \"image\": \"https://example.com/avatar.jpg\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Delete Account [AUTH]",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "token",         "value": "{{webToken}}" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "url": { "raw": "{{baseUrl}}/api/web/user/profile", "host": ["{{baseUrl}}"], "path": ["api","web","user","profile"] }
+              }
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/user/logout", "host": ["{{baseUrl}}"], "path": ["api","web","user","logout"] }
+              }
+            },
+            {
+              "name": "Get All Users [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "token",         "value": "{{webToken}}" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/web/user/all?page=1&limit=10",
+                  "host": ["{{baseUrl}}"], "path": ["api","web","user","all"],
+                  "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "search", "value": "", "disabled": true }]
+                }
               }
             }
           ]
         },
+
         {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/user/login", "host": ["{{baseUrl}}"], "path": ["api", "user", "login"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "description": "Login and receive accessToken (15m) + refreshToken (7d). Tokens auto-saved to collection variables."
-          },
-          "event": [
+          "name": "Live Matches",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const res = pm.response.json();",
-                  "if (res.data && res.data.accessToken) {",
-                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
-                  "  pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
-                  "  console.log('Tokens saved to collection variables');",
-                  "}"
-                ],
-                "type": "text/javascript"
+              "name": "Get All Live Matches [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/live-match/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","live-match","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "search", "value": "", "disabled": true }] }
+              }
+            },
+            {
+              "name": "Get Live Match by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/live-match/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","live-match","find",":id"], "variable": [{ "key": "id", "value": "MATCH_ID" }] }
+              }
+            },
+            {
+              "name": "Create Live Match [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/live-match/create", "host": ["{{baseUrl}}"], "path": ["api","web","live-match","create"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 123456,\n  \"fixture_id\": 789,\n  \"match_title\": \"Man City vs Arsenal\",\n  \"match_time\": \"1725202800\",\n  \"time\": \"15:00\",\n  \"is_hot\": 1,\n  \"status\": \"1\",\n  \"team_one_name\": \"Manchester City\",\n  \"team_two_name\": \"Arsenal\",\n  \"team_one_image\": \"https://example.com/mancity.png\",\n  \"team_two_image\": \"https://example.com/arsenal.png\",\n  \"team_one_id\": 50,\n  \"team_two_id\": 42,\n  \"position\": 1,\n  \"streaming_sources\": [\n    {\n      \"stream_title\": \"HD Stream 1\",\n      \"is_premium\": 0,\n      \"resolution\": \"1080p\",\n      \"stream_status\": \"1\",\n      \"platform\": \"both\",\n      \"stream_type\": \"m3u8\",\n      \"stream_url\": \"https://example.com/stream.m3u8\",\n      \"position\": 1\n    }\n  ]\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "Update Live Match [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/live-match/update/:id", "host": ["{{baseUrl}}"], "path": ["api","web","live-match","update",":id"], "variable": [{ "key": "id", "value": "MATCH_ID" }] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 123456,\n  \"match_title\": \"Man City vs Arsenal — Updated\",\n  \"match_time\": \"1725202800\",\n  \"time\": \"16:00\",\n  \"is_hot\": 1,\n  \"status\": \"1\",\n  \"team_one_name\": \"Manchester City\",\n  \"team_two_name\": \"Arsenal\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Sort Live Matches [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/live-match/sort", "host": ["{{baseUrl}}"], "path": ["api","web","live-match","sort"] },
+                "body": { "mode": "raw", "raw": "{\n  \"matches\": [\n    { \"id\": \"MATCH_ID_1\", \"position\": 1 },\n    { \"id\": \"MATCH_ID_2\", \"position\": 2 }\n  ]\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Delete Live Match [AUTH]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/live-match/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","live-match","delete",":id"], "variable": [{ "key": "id", "value": "MATCH_ID" }] }
+              }
+            },
+            {
+              "name": "Delete All Live Matches [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/live-match/delete-all", "host": ["{{baseUrl}}"], "path": ["api","web","live-match","delete-all"] }
               }
             }
           ]
         },
+
         {
-          "name": "Refresh Token",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{refreshToken}}" }],
-            "url": { "raw": "{{baseUrl}}/api/user/refresh", "host": ["{{baseUrl}}"], "path": ["api", "user", "refresh"] },
-            "description": "Get new accessToken using refreshToken. Send refreshToken in Authorization header or as cookie."
-          },
-          "event": [
+          "name": "Streaming Sources",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const res = pm.response.json();",
-                  "if (res.data && res.data.accessToken) {",
-                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
-                  "}"
-                ],
-                "type": "text/javascript"
+              "name": "Get Streams by Match ID",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/streaming-sources/find/:matchId", "host": ["{{baseUrl}}"], "path": ["api","web","streaming-sources","find",":matchId"], "variable": [{ "key": "matchId", "value": "MATCH_ID" }] },
+                "description": "Public — no JWT needed."
+              }
+            },
+            {
+              "name": "Sort Streaming Sources [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/streaming-sources/sort", "host": ["{{baseUrl}}"], "path": ["api","web","streaming-sources","sort"] },
+                "body": { "mode": "raw", "raw": "{\n  \"streams\": [\n    { \"id\": \"STREAM_ID_1\", \"position\": 1 },\n    { \"id\": \"STREAM_ID_2\", \"position\": 2 }\n  ]\n}", "options": { "raw": { "language": "json" } } }
               }
             }
           ]
         },
+
         {
-          "name": "Forgot Password",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/user/forgot-password", "host": ["{{baseUrl}}"], "path": ["api", "user", "forgot-password"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Change Password",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/user/change-password", "host": ["{{baseUrl}}"], "path": ["api", "user", "change-password"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"oldPassword\": \"password123\",\n  \"newPassword\": \"newpassword456\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Get My Profile",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/user/me", "host": ["{{baseUrl}}"], "path": ["api", "user", "me"] }
-          }
-        },
-        {
-          "name": "Update Profile",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/user/profile", "host": ["{{baseUrl}}"], "path": ["api", "user", "profile"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"John Updated\",\n  \"image\": \"https://example.com/avatar.jpg\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Delete Account",
-          "request": {
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/user/profile", "host": ["{{baseUrl}}"], "path": ["api", "user", "profile"] }
-          }
-        },
-        {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{baseUrl}}/api/user/logout", "host": ["{{baseUrl}}"], "path": ["api", "user", "logout"] },
-            "description": "Clears refreshToken cookie."
-          }
-        },
-        {
-          "name": "Get All Users [ADMIN/MOD]",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/user/all?page=1&limit=10&search=",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "user", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" },
-                { "key": "search", "value": "", "disabled": true }
-              ]
+          "name": "Highlights",
+          "item": [
+            {
+              "name": "Get All Highlights [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/highlights/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","highlights","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "search", "value": "", "disabled": true }] }
+              }
             },
-            "description": "Requires ADMIN or MODERATOR role."
-          }
+            {
+              "name": "Get Highlight by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/highlights/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","highlights","find",":id"], "variable": [{ "key": "id", "value": "HIGHLIGHT_ID" }] }
+              }
+            },
+            {
+              "name": "Create Highlight [AUTH]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/highlights/create", "host": ["{{baseUrl}}"], "path": ["api","web","highlights","create"] },
+                "body": { "mode": "raw", "raw": "{\n  \"title\": \"Man City 3-1 Arsenal Highlights\",\n  \"category\": \"Football\",\n  \"league_id\": 8,\n  \"league_image\": \"https://example.com/pl.png\",\n  \"date\": \"2024-09-01\",\n  \"short_description\": \"Haaland hat-trick seals the win\",\n  \"video_type\": \"youtube\",\n  \"youtube_url\": \"https://www.youtube.com/watch?v=EXAMPLE\",\n  \"thumbnail_type\": \"url\",\n  \"highlight_image\": \"https://example.com/thumb.jpg\",\n  \"fixture_id\": \"789\",\n  \"status\": \"1\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Update Highlight [AUTH]",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/highlights/update/:id", "host": ["{{baseUrl}}"], "path": ["api","web","highlights","update",":id"], "variable": [{ "key": "id", "value": "HIGHLIGHT_ID" }] },
+                "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Highlight Title\",\n  \"category\": \"Football\",\n  \"date\": \"2024-09-01\",\n  \"video_type\": \"youtube\",\n  \"youtube_url\": \"https://www.youtube.com/watch?v=UPDATED\",\n  \"status\": \"1\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Delete Highlight [AUTH]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/highlights/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","highlights","delete",":id"], "variable": [{ "key": "id", "value": "HIGHLIGHT_ID" }] }
+              }
+            },
+            {
+              "name": "Delete All Highlights [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/highlights/delete-all", "host": ["{{baseUrl}}"], "path": ["api","web","highlights","delete-all"] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "News",
+          "item": [
+            {
+              "name": "Get All News [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/news/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","news","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "search", "value": "", "disabled": true }] }
+              }
+            },
+            {
+              "name": "Get News by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/news/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","news","find",":id"], "variable": [{ "key": "id", "value": "NEWS_ID" }] }
+              }
+            },
+            {
+              "name": "Create News [AUTH]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/news/create", "host": ["{{baseUrl}}"], "path": ["api","web","news","create"] },
+                "body": { "mode": "raw", "raw": "{\n  \"title\": \"Premier League Week 5 Roundup\",\n  \"category\": \"Football\",\n  \"source_name\": \"BBC Sport\",\n  \"news\": \"Full article content here...\",\n  \"league_id\": 8,\n  \"league_image\": \"https://example.com/pl.png\",\n  \"slug\": \"premier-league-week-5-roundup\",\n  \"url\": \"https://bbc.com/sport/football/article\",\n  \"image\": \"https://example.com/news-thumb.jpg\",\n  \"description\": \"Short description\",\n  \"publish_date\": \"2024-09-01\",\n  \"status\": \"1\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Delete News [AUTH]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/news/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","news","delete",":id"], "variable": [{ "key": "id", "value": "NEWS_ID" }] }
+              }
+            },
+            {
+              "name": "Delete All News [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/news/delete-all", "host": ["{{baseUrl}}"], "path": ["api","web","news","delete-all"] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Ads Types",
+          "item": [
+            {
+              "name": "Get All Ads Types [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/ads-type/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","ads-type","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+              }
+            },
+            {
+              "name": "Get Ads Type by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/ads-type/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","ads-type","find",":id"], "variable": [{ "key": "id", "value": "ADS_TYPE_ID" }] }
+              }
+            },
+            {
+              "name": "Create Ads Type [AUTH]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/ads-type/create", "host": ["{{baseUrl}}"], "path": ["api","web","ads-type","create"] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"name\": \"Banner Ad\",\n  \"status\": \"1\",\n  \"position\": 0\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Update Ads Type [AUTH]",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/ads-type/update/:id", "host": ["{{baseUrl}}"], "path": ["api","web","ads-type","update",":id"], "variable": [{ "key": "id", "value": "ADS_TYPE_ID" }] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"name\": \"Banner Ad Updated\",\n  \"status\": \"1\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Delete Ads Type [AUTH]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/ads-type/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","ads-type","delete",":id"], "variable": [{ "key": "id", "value": "ADS_TYPE_ID" }] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Notifications",
+          "item": [
+            {
+              "name": "Create Notification",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/notifications/create", "host": ["{{baseUrl}}"], "path": ["api","web","notifications","create"] },
+                "body": { "mode": "raw", "raw": "{\n  \"title\": \"Match Starting Soon\",\n  \"body\": \"Man City vs Arsenal kicks off in 30 minutes!\",\n  \"image\": \"https://example.com/notif.jpg\",\n  \"notification_type\": \"in_app\",\n  \"action_url\": \"/match/123456\"\n}", "options": { "raw": { "language": "json" } },
+                "description": "Public — no JWT. ID auto-generated." }
+              }
+            },
+            {
+              "name": "Get All Notifications [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/notifications/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","notifications","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+              }
+            },
+            {
+              "name": "Get Notification by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/notifications/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","notifications","find",":id"], "variable": [{ "key": "id", "value": "NOTIFICATION_ID" }] }
+              }
+            },
+            {
+              "name": "Delete Notification [AUTH]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/notifications/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","notifications","delete",":id"], "variable": [{ "key": "id", "value": "NOTIFICATION_ID" }] }
+              }
+            },
+            {
+              "name": "Delete All Notifications [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/notifications/deleta-all", "host": ["{{baseUrl}}"], "path": ["api","web","notifications","deleta-all"] },
+                "description": "Note: 'deleta-all' typo exists in the actual route."
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Selected Leagues",
+          "item": [
+            {
+              "name": "Get All Leagues — Paginated",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+              }
+            },
+            {
+              "name": "Get All Leagues — No Pagination",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/every", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","every"] }
+              }
+            },
+            {
+              "name": "Search Leagues [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/search?q=premier", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","search"], "query": [{ "key": "q", "value": "premier" }] }
+              }
+            },
+            {
+              "name": "Get League by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","find",":id"], "variable": [{ "key": "id", "value": "LEAGUE_ID" }] }
+              }
+            },
+            {
+              "name": "Create League [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/create", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","create"] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 8,\n  \"seasonId\": 21646,\n  \"name\": \"Premier League\",\n  \"logo\": \"https://example.com/pl-logo.png\",\n  \"status\": \"1\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Update League [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/update/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","update",":id"], "variable": [{ "key": "id", "value": "LEAGUE_ID" }] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 8,\n  \"name\": \"Premier League\",\n  \"logo\": \"https://example.com/pl-logo-new.png\",\n  \"status\": \"1\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Sort Leagues [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/sortBy", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","sortBy"] },
+                "body": { "mode": "raw", "raw": "{\n  \"leagues\": [\n    { \"id\": \"LEAGUE_ID_1\", \"position\": 1 },\n    { \"id\": \"LEAGUE_ID_2\", \"position\": 2 }\n  ]\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Delete League [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-leagues/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-leagues","delete",":id"], "variable": [{ "key": "id", "value": "LEAGUE_ID" }] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Selected Teams",
+          "item": [
+            {
+              "name": "Get All Teams — Paginated",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+              }
+            },
+            {
+              "name": "Get All Teams — No Pagination",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/every", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","every"] }
+              }
+            },
+            {
+              "name": "Search Teams [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/search?q=arsenal", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","search"], "query": [{ "key": "q", "value": "arsenal" }] }
+              }
+            },
+            {
+              "name": "Get Team by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","find",":id"], "variable": [{ "key": "id", "value": "TEAM_ID" }] }
+              }
+            },
+            {
+              "name": "Create Team [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/create", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","create"] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 42,\n  \"name\": \"Arsenal\",\n  \"logo\": \"https://example.com/arsenal.png\",\n  \"seasonId\": \"21646\",\n  \"status\": \"1\",\n  \"newsUrl\": \"https://example.com/arsenal-news\",\n  \"channelId\": \"UCArsenal\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Update Team [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/update/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","update",":id"], "variable": [{ "key": "id", "value": "TEAM_ID" }] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 42,\n  \"name\": \"Arsenal FC\",\n  \"logo\": \"https://example.com/arsenal-new.png\",\n  \"seasonId\": \"21646\",\n  \"channelId\": \"UCArsenal\",\n  \"status\": \"1\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Sort Teams [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/sortBy", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","sortBy"] },
+                "body": { "mode": "raw", "raw": "[\n  { \"id\": 42, \"position\": 1 },\n  { \"id\": 50, \"position\": 2 }\n]", "options": { "raw": { "language": "json" } }, "description": "Body is a raw array (not wrapped in object)." }
+              }
+            },
+            {
+              "name": "Delete Team [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-teams/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-teams","delete",":id"], "variable": [{ "key": "id", "value": "TEAM_ID" }] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Selected Players",
+          "item": [
+            {
+              "name": "Get All Players — Paginated",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/all?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","all"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+              }
+            },
+            {
+              "name": "Get All Players — No Pagination",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/every", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","every"] }
+              }
+            },
+            {
+              "name": "Search Players [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/search?q=haaland", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","search"], "query": [{ "key": "q", "value": "haaland" }] }
+              }
+            },
+            {
+              "name": "Get Player by ID [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/find/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","find",":id"], "variable": [{ "key": "id", "value": "PLAYER_ID" }] }
+              }
+            },
+            {
+              "name": "Create Player [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/create", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","create"] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 1001,\n  \"name\": \"Erling Haaland\",\n  \"logo\": \"https://example.com/haaland.png\",\n  \"team_logo\": \"https://example.com/mancity.png\",\n  \"nationality_logo\": \"https://example.com/norway.png\",\n  \"player_position\": \"Striker\",\n  \"status\": \"1\",\n  \"newsUrl\": \"https://example.com/haaland-news\",\n  \"channelId\": \"UCHaaland\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Update Player [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/update/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","update",":id"], "variable": [{ "key": "id", "value": "PLAYER_ID" }] },
+                "body": { "mode": "raw", "raw": "{\n  \"id\": 1001,\n  \"name\": \"Erling Haaland\",\n  \"logo\": \"https://example.com/haaland-updated.png\",\n  \"player_position\": \"Centre Forward\",\n  \"channelId\": \"UCHaaland\",\n  \"status\": \"1\",\n  \"position\": 1\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Sort Players [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/sortBy", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","sortBy"] },
+                "body": { "mode": "raw", "raw": "[\n  { \"id\": 1001, \"position\": 1 },\n  { \"id\": 1002, \"position\": 2 }\n]", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Delete Player [AUTH, ADMIN/MOD]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/selected-players/delete/:id", "host": ["{{baseUrl}}"], "path": ["api","web","selected-players","delete",":id"], "variable": [{ "key": "id", "value": "PLAYER_ID" }] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "App Settings",
+          "description": "ADMIN only.",
+          "item": [
+            {
+              "name": "Get App Settings [AUTH, ADMIN]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/app-settings/find", "host": ["{{baseUrl}}"], "path": ["api","web","app-settings","find"] }
+              }
+            },
+            {
+              "name": "Update App Settings [AUTH, ADMIN]",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/app-settings/update", "host": ["{{baseUrl}}"], "path": ["api","web","app-settings","update"] },
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sports App\",\n  \"uniqueId\": \"com.example.sportsapp\",\n  \"status\": \"1\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"socialMedia\": {\n    \"facebook\": \"https://facebook.com/sportsapp\",\n    \"instagram\": \"https://instagram.com/sportsapp\",\n    \"twitter\": \"https://twitter.com/sportsapp\",\n    \"telegram\": \"https://t.me/sportsapp\",\n    \"youtube\": \"https://youtube.com/sportsapp\"\n  },\n  \"androidSettings\": {\n    \"privacyPolicy\": \"https://example.com/privacy\",\n    \"termsConditions\": \"https://example.com/terms\",\n    \"forceUpdate\": \"no\",\n    \"versionName\": \"1.0.0\",\n    \"versionCode\": \"1\"\n  },\n  \"iosSettings\": {\n    \"privacyPolicy\": \"https://example.com/privacy\",\n    \"termsConditions\": \"https://example.com/terms\",\n    \"forceUpdate\": \"no\",\n    \"versionName\": \"1.0.0\",\n    \"versionCode\": \"1\"\n  }\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Reset App Settings [AUTH, ADMIN]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/app-settings/reset", "host": ["{{baseUrl}}"], "path": ["api","web","app-settings","reset"] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "General Settings",
+          "item": [
+            {
+              "name": "Get General Settings [AUTH]",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/general-settings/get", "host": ["{{baseUrl}}"], "path": ["api","web","general-settings","get"] }
+              }
+            },
+            {
+              "name": "Update General Settings [AUTH]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/general-settings/update", "host": ["{{baseUrl}}"], "path": ["api","web","general-settings","update"] },
+                "body": { "mode": "raw", "raw": "{\n  \"company_name\": \"Sports Co.\",\n  \"site_title\": \"Sports App\",\n  \"terms\": \"https://example.com/terms\",\n  \"policy\": \"https://example.com/privacy\",\n  \"contact_us\": \"support@example.com\",\n  \"facebook\": \"https://facebook.com/sportsapp\",\n  \"youtube\": \"https://youtube.com/sportsapp\",\n  \"instagram\": \"https://instagram.com/sportsapp\",\n  \"site_logo\": \"https://example.com/logo.png\",\n  \"site_icon\": \"https://example.com/icon.png\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            },
+            {
+              "name": "Reset General Settings [AUTH]",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/general-settings/reset", "host": ["{{baseUrl}}"], "path": ["api","web","general-settings","reset"] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Contact Us",
+          "item": [
+            {
+              "name": "Submit Contact Form [AUTH]",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/contact-us/contact-us", "host": ["{{baseUrl}}"], "path": ["api","web","contact-us","contact-us"] },
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"name\": \"John Doe\",\n  \"subject\": \"App Issue\",\n  \"message\": \"I can't access the live stream for today's match.\"\n}", "options": { "raw": { "language": "json" } },
+                "description": "Note: full path is /api/web/contact-us/contact-us (duplicate segment in route definition)." }
+              }
+            },
+            {
+              "name": "Get All Contact Submissions",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/contact-us/contact-us", "host": ["{{baseUrl}}"], "path": ["api","web","contact-us","contact-us"] }
+              }
+            },
+            {
+              "name": "Get Contact Submission by ID",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/contact-us/contact-us/:id", "host": ["{{baseUrl}}"], "path": ["api","web","contact-us","contact-us",":id"], "variable": [{ "key": "id", "value": "CONTACT_ID" }] }
+              }
+            },
+            {
+              "name": "Delete Contact Submission",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/contact-us/contact-us/:id", "host": ["{{baseUrl}}"], "path": ["api","web","contact-us","contact-us",":id"], "variable": [{ "key": "id", "value": "CONTACT_ID" }] }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Sport Monk",
+          "item": [
+            {
+              "name": "Get Formatted Fixtures by Date",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/sport-monk/fixtures/formatted", "host": ["{{baseUrl}}"], "path": ["api","web","sport-monk","fixtures","formatted"] },
+                "body": { "mode": "raw", "raw": "{\n  \"date\": \"2024-09-01\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Rapid Football",
+          "item": [
+            {
+              "name": "Get Formatted Fixtures by Date",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{webToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/web/rapid-football/fixtures/formatted", "host": ["{{baseUrl}}"], "path": ["api","web","rapid-football","fixtures","formatted"] },
+                "body": { "mode": "raw", "raw": "{\n  \"date\": \"2024-09-01\"\n}", "options": { "raw": { "language": "json" } } }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "CricBuzz",
+          "item": [
+            {
+              "name": "Get Recent Cricket Matches",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/cricbuzz/fixtures/matches/v1/recent", "host": ["{{baseUrl}}"], "path": ["api","web","cricbuzz","fixtures","matches","v1","recent"] },
+                "description": "Any path after /fixtures/ is forwarded to CricBuzz RapidAPI."
+              }
+            },
+            {
+              "name": "Get Cricket Match Details",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{webToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/web/cricbuzz/fixtures/mcenter/v1/:matchId", "host": ["{{baseUrl}}"], "path": ["api","web","cricbuzz","fixtures","mcenter","v1",":matchId"], "variable": [{ "key": "matchId", "value": "MATCH_ID" }] }
+              }
+            }
+          ]
         }
+
       ]
     },
+
     {
-      "name": "02 - Live Matches",
-      "description": "CRUD for live match entries. All routes require authentication.",
+      "name": "📱 Mobile API",
+      "description": "All routes under /api/mobile. Every request requires `token: {{mobileToken}}` header (verifyMobileApi middleware). Response data uses compressed field names to reduce payload size.",
       "item": [
+
         {
-          "name": "Get All Live Matches",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/live-match/all?page=1&limit=10&search=",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "live-match", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" },
-                { "key": "search", "value": "", "disabled": true }
-              ]
+          "name": "System",
+          "item": [
+            {
+              "name": "Get Client IP",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/geo/client-ip", "host": ["{{baseUrl}}"], "path": ["api","mobile","geo","client-ip"] },
+                "description": "Returns the caller's detected IP address."
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Get Live Match by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/live-match/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "live-match", "find", ":id"],
-              "variable": [{ "key": "id", "value": "MATCH_ID_HERE" }]
+          "name": "Live Matches",
+          "description": "Redis cached.",
+          "item": [
+            {
+              "name": "Get Live Matches",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/matches/live-fixtures", "host": ["{{baseUrl}}"], "path": ["api","mobile","matches","live-fixtures"] },
+                "description": "Returns all active live matches sorted by position. Compressed fields: mid, fid, l (ln/li), mi (mt/mti/ih), tm (t1/t2)."
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Create Live Match [ADMIN/MOD]",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/live-match/create", "host": ["{{baseUrl}}"], "path": ["api", "live-match", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 123456,\n  \"fixture_id\": 789,\n  \"match_title\": \"Man City vs Arsenal\",\n  \"match_time\": \"2024-09-01T15:00:00Z\",\n  \"time\": \"15:00\",\n  \"is_hot\": 1,\n  \"status\": \"1\",\n  \"team_one_name\": \"Manchester City\",\n  \"team_two_name\": \"Arsenal\",\n  \"team_one_image\": \"https://example.com/mancity.png\",\n  \"team_two_image\": \"https://example.com/arsenal.png\",\n  \"team_one_id\": 50,\n  \"team_two_id\": 42,\n  \"position\": 1,\n  \"streaming_sources\": [\n    {\n      \"stream_title\": \"HD Stream 1\",\n      \"is_premium\": 0,\n      \"resolution\": \"1080p\",\n      \"stream_status\": \"1\",\n      \"platform\": \"both\",\n      \"stream_type\": \"m3u8\",\n      \"stream_url\": \"https://example.com/stream.m3u8\",\n      \"position\": 1\n    }\n  ]\n}",
-              "options": { "raw": { "language": "json" } }
+          "name": "Streaming Sources",
+          "description": "Redis cached.",
+          "item": [
+            {
+              "name": "Get Streams by Match ID",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/video/stream-sources/:matchId", "host": ["{{baseUrl}}"], "path": ["api","mobile","video","stream-sources",":matchId"], "variable": [{ "key": "matchId", "value": "123456" }] },
+                "description": "matchId is the numeric match `id` (not MongoDB _id). Returns active streams sorted by position. Compressed fields: sid, t, ip, res, plt, st, pw, lw, rs, url, hdr, sk."
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Update Live Match [ADMIN/MOD]",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": {
-              "raw": "{{baseUrl}}/api/live-match/update/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "live-match", "update", ":id"],
-              "variable": [{ "key": "id", "value": "MATCH_ID_HERE" }]
+          "name": "Highlights",
+          "item": [
+            {
+              "name": "Get All Highlights",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile/video/highlights?page=1&limit=10",
+                  "host": ["{{baseUrl}}"], "path": ["api","mobile","video","highlights"],
+                  "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }]
+                },
+                "description": "Paginated, status=1 only, newest first. Compressed fields: id, t, cat, lid, li, dt, sd, vt, yt, tt, hi, fid, vids."
+              }
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 123456,\n  \"match_title\": \"Man City vs Arsenal - Updated\",\n  \"match_time\": \"2024-09-01T16:00:00Z\",\n  \"time\": \"16:00\",\n  \"is_hot\": 1,\n  \"status\": \"1\",\n  \"team_one_name\": \"Manchester City\",\n  \"team_two_name\": \"Arsenal\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
+            {
+              "name": "Get Highlight by ID",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/video/highlights/:id", "host": ["{{baseUrl}}"], "path": ["api","mobile","video","highlights",":id"], "variable": [{ "key": "id", "value": "HIGHLIGHT_ID" }] },
+                "description": "Full highlight document (status=1 only)."
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Sort Live Matches [ADMIN/MOD]",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/live-match/sort", "host": ["{{baseUrl}}"], "path": ["api", "live-match", "sort"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"matches\": [\n    { \"id\": \"MATCH_ID_1\", \"position\": 1 },\n    { \"id\": \"MATCH_ID_2\", \"position\": 2 },\n    { \"id\": \"MATCH_ID_3\", \"position\": 3 }\n  ]\n}",
-              "options": { "raw": { "language": "json" } }
+          "name": "News",
+          "item": [
+            {
+              "name": "Get News Feed",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile/feed/news-updates?page=1&limit=10",
+                  "host": ["{{baseUrl}}"], "path": ["api","mobile","feed","news-updates"],
+                  "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }]
+                },
+                "description": "Paginated, status=1 only, newest first. Compressed fields: id, t, cat, src, lid, li, sl, url, img, desc, dt."
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Delete Live Match",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/live-match/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "live-match", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "MATCH_ID_HERE" }]
+          "name": "Contact",
+          "item": [
+            {
+              "name": "Submit Contact Form",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/contact/help", "host": ["{{baseUrl}}"], "path": ["api","mobile","contact","help"] },
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"name\": \"John Doe\",\n  \"subject\": \"App Issue\",\n  \"message\": \"I can't access the live stream for today's match.\"\n}", "options": { "raw": { "language": "json" } } }
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Delete All Live Matches [ADMIN/MOD]",
-          "request": {
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/live-match/delete-all", "host": ["{{baseUrl}}"], "path": ["api", "live-match", "delete-all"] }
-          }
+          "name": "Settings",
+          "item": [
+            {
+              "name": "Get App Config (Android)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/dashboard/admin-config?platform=android", "host": ["{{baseUrl}}"], "path": ["api","mobile","dashboard","admin-config"], "query": [{ "key": "platform", "value": "android" }] },
+                "description": "Returns platform-specific settings: name, uniqueId, status, logo, socialMedia, notificationSettings, platformSettings (androidSettings). Creates defaults if none exist."
+              }
+            },
+            {
+              "name": "Get App Config (iOS)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/dashboard/admin-config?platform=ios", "host": ["{{baseUrl}}"], "path": ["api","mobile","dashboard","admin-config"], "query": [{ "key": "platform", "value": "ios" }] }
+              }
+            },
+            {
+              "name": "Get General Settings",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{mobileToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/mobile/profile/user-config", "host": ["{{baseUrl}}"], "path": ["api","mobile","profile","user-config"] },
+                "description": "Returns company_name, site_title, terms, policy, contact_us, social links, site_logo, site_icon."
+              }
+            }
+          ]
         }
+
       ]
     },
+
     {
-      "name": "03 - Streaming Sources",
-      "description": "Manage streaming sources linked to live matches.",
+      "name": "⚡ Proxy / Sports API",
+      "description": "All routes under /api/sports. Every request requires `token: {{sportsToken}}` header (verifyProxyApi middleware). All routes are Redis cached. Wildcards forward to upstream APIs.",
       "item": [
+
         {
-          "name": "Get Streams by Match ID",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/streaming-sources/find/:matchId",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "streaming-sources", "find", ":matchId"],
-              "variable": [{ "key": "matchId", "value": "MATCH_ID_HERE" }]
+          "name": "SportMonks V3",
+          "description": "Proxied to SPORTMONKS_FOOTBALL_URL/v3. Append any SportMonks V3 path after /monk/v3.",
+          "item": [
+            {
+              "name": "Get Fixtures by Date",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/monk/v3/fixtures?filters=fixtureDate:2024-09-01", "host": ["{{baseUrl}}"], "path": ["api","sports","monk","v3","fixtures"], "query": [{ "key": "filters", "value": "fixtureDate:2024-09-01" }] }
+              }
             },
-            "description": "Public endpoint — no auth required."
-          }
-        },
-        {
-          "name": "Sort Streaming Sources [ADMIN/MOD]",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/streaming-sources/sort", "host": ["{{baseUrl}}"], "path": ["api", "streaming-sources", "sort"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"streams\": [\n    { \"id\": \"STREAM_ID_1\", \"position\": 1 },\n    { \"id\": \"STREAM_ID_2\", \"position\": 2 }\n  ]\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "04 - Highlights",
-      "description": "Video highlight CRUD. All routes require authentication.",
-      "item": [
-        {
-          "name": "Get All Highlights",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/highlights/all?page=1&limit=10&search=",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "highlights", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" },
-                { "key": "search", "value": "", "disabled": true }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Highlight by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/highlights/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "highlights", "find", ":id"],
-              "variable": [{ "key": "id", "value": "HIGHLIGHT_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Create Highlight",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/highlights/create", "host": ["{{baseUrl}}"], "path": ["api", "highlights", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Man City 3-1 Arsenal Highlights\",\n  \"category\": \"Football\",\n  \"league_id\": 8,\n  \"league_image\": \"https://example.com/pl.png\",\n  \"date\": \"2024-09-01\",\n  \"short_description\": \"Haaland hat-trick seals the win\",\n  \"video_type\": \"youtube\",\n  \"youtube_url\": \"https://www.youtube.com/watch?v=EXAMPLE\",\n  \"thumbnail_type\": \"url\",\n  \"highlight_image\": \"https://example.com/thumb.jpg\",\n  \"fixture_id\": \"789\",\n  \"status\": \"1\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Update Highlight",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": {
-              "raw": "{{baseUrl}}/api/highlights/update/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "highlights", "update", ":id"],
-              "variable": [{ "key": "id", "value": "HIGHLIGHT_ID_HERE" }]
+            {
+              "name": "Get Leagues",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/monk/v3/leagues", "host": ["{{baseUrl}}"], "path": ["api","sports","monk","v3","leagues"] }
+              }
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Updated Highlight Title\",\n  \"category\": \"Football\",\n  \"date\": \"2024-09-01\",\n  \"video_type\": \"youtube\",\n  \"youtube_url\": \"https://www.youtube.com/watch?v=UPDATED\",\n  \"status\": \"1\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Delete Highlight",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/highlights/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "highlights", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "HIGHLIGHT_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Delete All Highlights [ADMIN/MOD]",
-          "request": {
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/highlights/delete-all", "host": ["{{baseUrl}}"], "path": ["api", "highlights", "delete-all"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "05 - News",
-      "description": "Sports news CRUD. All routes require authentication.",
-      "item": [
-        {
-          "name": "Get All News",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/news/all?page=1&limit=10&search=",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "news", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" },
-                { "key": "search", "value": "", "disabled": true }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get News by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/news/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "news", "find", ":id"],
-              "variable": [{ "key": "id", "value": "NEWS_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Create News",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/news/create", "host": ["{{baseUrl}}"], "path": ["api", "news", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Premier League Week 5 Roundup\",\n  \"category\": \"Football\",\n  \"source_name\": \"BBC Sport\",\n  \"news\": \"Full article content here...\",\n  \"league_id\": 8,\n  \"league_image\": \"https://example.com/pl.png\",\n  \"slug\": \"premier-league-week-5-roundup\",\n  \"url\": \"https://bbc.com/sport/football/article\",\n  \"image\": \"https://example.com/news-thumb.jpg\",\n  \"description\": \"Short description of the article\",\n  \"publish_date\": \"2024-09-01\",\n  \"status\": \"1\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Delete News",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/news/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "news", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "NEWS_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Delete All News [ADMIN/MOD]",
-          "request": {
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/news/delete-all", "host": ["{{baseUrl}}"], "path": ["api", "news", "delete-all"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "06 - Ads Types",
-      "description": "Ad type configuration. All routes require authentication.",
-      "item": [
-        {
-          "name": "Get All Ads Types",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/ads-type/all?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "ads-type", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Ads Type by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/ads-type/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "ads-type", "find", ":id"],
-              "variable": [{ "key": "id", "value": "ADS_TYPE_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Create Ads Type",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/ads-type/create", "host": ["{{baseUrl}}"], "path": ["api", "ads-type", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 1,\n  \"name\": \"Banner Ad\",\n  \"status\": \"1\",\n  \"position\": 0\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Update Ads Type",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": {
-              "raw": "{{baseUrl}}/api/ads-type/update/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "ads-type", "update", ":id"],
-              "variable": [{ "key": "id", "value": "ADS_TYPE_ID_HERE" }]
+            {
+              "name": "Get Teams",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/monk/v3/teams", "host": ["{{baseUrl}}"], "path": ["api","sports","monk","v3","teams"] }
+              }
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 1,\n  \"name\": \"Banner Ad Updated\",\n  \"status\": \"1\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
+            {
+              "name": "Get Players",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/monk/v3/players", "host": ["{{baseUrl}}"], "path": ["api","sports","monk","v3","players"] }
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Delete Ads Type",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/ads-type/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "ads-type", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "ADS_TYPE_ID_HERE" }]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "07 - Notifications",
-      "description": "In-app notification management.",
-      "item": [
-        {
-          "name": "Create Notification [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/notifications/create", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Match Starting Soon\",\n  \"body\": \"Man City vs Arsenal kicks off in 30 minutes!\",\n  \"image\": \"https://example.com/notif.jpg\",\n  \"notification_type\": \"in_app\",\n  \"action_url\": \"/match/123456\"\n}",
-              "options": { "raw": { "language": "json" } }
+          "name": "SportMonks V4",
+          "description": "Proxied to SPORTMONKS_FOOTBALL_URL/v4. Append any SportMonks V4 path after /monk/v4.",
+          "item": [
+            {
+              "name": "Get Fixtures by Date",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/monk/v4/fixtures?filters=fixtureDate:2024-09-01", "host": ["{{baseUrl}}"], "path": ["api","sports","monk","v4","fixtures"], "query": [{ "key": "filters", "value": "fixtureDate:2024-09-01" }] }
+              }
             },
-            "description": "Public endpoint — no auth. ID is auto-generated."
-          }
-        },
-        {
-          "name": "Get All Notifications",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/notifications/all?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "notifications", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
-              ]
+            {
+              "name": "Get Leagues",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/monk/v4/leagues", "host": ["{{baseUrl}}"], "path": ["api","sports","monk","v4","leagues"] }
+              }
             }
-          }
+          ]
         },
+
         {
-          "name": "Get Notification by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/notifications/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "notifications", "find", ":id"],
-              "variable": [{ "key": "id", "value": "NOTIFICATION_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Delete Notification",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/notifications/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "notifications", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "NOTIFICATION_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Delete All Notifications [ADMIN/MOD]",
-          "request": {
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/notifications/deleta-all", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "deleta-all"] },
-            "description": "Note: 'deleta-all' typo is in the actual route definition."
-          }
-        }
-      ]
-    },
-    {
-      "name": "08 - Selected Leagues",
-      "description": "Curated league list. Public reads, auth required for mutations.",
-      "item": [
-        {
-          "name": "Get All Leagues (Paginated) [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-leagues/all?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-leagues", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get All Leagues (No Pagination) [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/selected-leagues/every", "host": ["{{baseUrl}}"], "path": ["api", "selected-leagues", "every"] },
-            "description": "Returns full list without pagination."
-          }
-        },
-        {
-          "name": "Search Leagues [ADMIN/MOD]",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-leagues/search?q=premier",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-leagues", "search"],
-              "query": [{ "key": "q", "value": "premier" }]
+          "name": "RapidAPI Football V3",
+          "description": "Proxied to RAPID_API_FOOTBALL_URL. Fixtures and leagues responses are enriched with live-match flags and selected-league filtering.",
+          "item": [
+            {
+              "name": "Get Fixtures by Date (Enriched)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/rapid/v3/fixtures?date=2024-09-01", "host": ["{{baseUrl}}"], "path": ["api","sports","rapid","v3","fixtures"], "query": [{ "key": "date", "value": "2024-09-01" }] },
+                "description": "Fixtures filtered to selected leagues only. Each fixture gets `rex_value: true` if it matches a live match fixture_id."
+              }
             },
-            "description": "Proxies search to SportMonks. Requires ADMIN or MODERATOR."
-          }
-        },
-        {
-          "name": "Get League by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-leagues/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-leagues", "find", ":id"],
-              "variable": [{ "key": "id", "value": "LEAGUE_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Create League [ADMIN/MOD]",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/selected-leagues/create", "host": ["{{baseUrl}}"], "path": ["api", "selected-leagues", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 8,\n  \"seasonId\": 21646,\n  \"name\": \"Premier League\",\n  \"logo\": \"https://example.com/pl-logo.png\",\n  \"status\": \"1\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Update League [ADMIN/MOD]",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-leagues/update/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-leagues", "update", ":id"],
-              "variable": [{ "key": "id", "value": "LEAGUE_ID_HERE" }]
+            {
+              "name": "Get Leagues (Enriched)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/rapid/v3/leagues", "host": ["{{baseUrl}}"], "path": ["api","sports","rapid","v3","leagues"] },
+                "description": "Filtered to selected leagues only. Each league gets `news: true|false` flag."
+              }
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 8,\n  \"name\": \"Premier League\",\n  \"logo\": \"https://example.com/pl-logo-new.png\",\n  \"status\": \"1\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
+            {
+              "name": "Generic Pass-Through",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "token", "value": "{{sportsToken}}" }],
+                "url": { "raw": "{{baseUrl}}/api/sports/rapid/v3/standings?league=39&season=2024", "host": ["{{baseUrl}}"], "path": ["api","sports","rapid","v3","standings"], "query": [{ "key": "league", "value": "39" }, { "key": "season", "value": "2024" }] }
+              }
             }
-          }
-        },
-        {
-          "name": "Sort Leagues [ADMIN/MOD]",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/selected-leagues/sortBy", "host": ["{{baseUrl}}"], "path": ["api", "selected-leagues", "sortBy"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"leagues\": [\n    { \"id\": \"LEAGUE_ID_1\", \"position\": 1 },\n    { \"id\": \"LEAGUE_ID_2\", \"position\": 2 }\n  ]\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Delete League [ADMIN/MOD]",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-leagues/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-leagues", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "LEAGUE_ID_HERE" }]
-            }
-          }
+          ]
         }
-      ]
-    },
-    {
-      "name": "09 - Selected Teams",
-      "description": "Curated team list. Public reads, auth required for mutations.",
-      "item": [
-        {
-          "name": "Get All Teams (Paginated) [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-teams/all?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-teams", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get All Teams (No Pagination) [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/selected-teams/every", "host": ["{{baseUrl}}"], "path": ["api", "selected-teams", "every"] }
-          }
-        },
-        {
-          "name": "Search Teams [ADMIN/MOD]",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-teams/search?q=arsenal",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-teams", "search"],
-              "query": [{ "key": "q", "value": "arsenal" }]
-            }
-          }
-        },
-        {
-          "name": "Get Team by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-teams/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-teams", "find", ":id"],
-              "variable": [{ "key": "id", "value": "TEAM_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Create Team [ADMIN/MOD]",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/selected-teams/create", "host": ["{{baseUrl}}"], "path": ["api", "selected-teams", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 42,\n  \"name\": \"Arsenal\",\n  \"logo\": \"https://example.com/arsenal.png\",\n  \"seasonId\": \"21646\",\n  \"status\": \"1\",\n  \"newsUrl\": \"https://example.com/arsenal-news\",\n  \"channelId\": \"UCArsenal\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Update Team [ADMIN/MOD]",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-teams/update/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-teams", "update", ":id"],
-              "variable": [{ "key": "id", "value": "TEAM_ID_HERE" }]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 42,\n  \"name\": \"Arsenal FC\",\n  \"logo\": \"https://example.com/arsenal-new.png\",\n  \"seasonId\": \"21646\",\n  \"channelId\": \"UCArsenal\",\n  \"status\": \"1\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Sort Teams [ADMIN/MOD]",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/selected-teams/sortBy", "host": ["{{baseUrl}}"], "path": ["api", "selected-teams", "sortBy"] },
-            "body": {
-              "mode": "raw",
-              "raw": "[\n  { \"id\": 42, \"position\": 1 },\n  { \"id\": 50, \"position\": 2 }\n]",
-              "options": { "raw": { "language": "json" } }
-            },
-            "description": "Body is a raw array (not wrapped in object)."
-          }
-        },
-        {
-          "name": "Delete Team [ADMIN/MOD]",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-teams/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-teams", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "TEAM_ID_HERE" }]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "10 - Selected Players",
-      "description": "Curated player list. Public reads, auth required for mutations.",
-      "item": [
-        {
-          "name": "Get All Players (Paginated) [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-players/all?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-players", "all"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get All Players (No Pagination) [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/selected-players/every", "host": ["{{baseUrl}}"], "path": ["api", "selected-players", "every"] }
-          }
-        },
-        {
-          "name": "Search Players [ADMIN/MOD]",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-players/search?q=haaland",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-players", "search"],
-              "query": [{ "key": "q", "value": "haaland" }]
-            }
-          }
-        },
-        {
-          "name": "Get Player by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-players/find/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-players", "find", ":id"],
-              "variable": [{ "key": "id", "value": "PLAYER_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Create Player [ADMIN/MOD]",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/selected-players/create", "host": ["{{baseUrl}}"], "path": ["api", "selected-players", "create"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 1001,\n  \"name\": \"Erling Haaland\",\n  \"logo\": \"https://example.com/haaland.png\",\n  \"team_logo\": \"https://example.com/mancity.png\",\n  \"nationality_logo\": \"https://example.com/norway.png\",\n  \"player_position\": \"Striker\",\n  \"status\": \"1\",\n  \"newsUrl\": \"https://example.com/haaland-news\",\n  \"channelId\": \"UCHaaland\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Update Player [ADMIN/MOD]",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-players/update/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-players", "update", ":id"],
-              "variable": [{ "key": "id", "value": "PLAYER_ID_HERE" }]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 1001,\n  \"name\": \"Erling Haaland\",\n  \"logo\": \"https://example.com/haaland-updated.png\",\n  \"player_position\": \"Centre Forward\",\n  \"channelId\": \"UCHaaland\",\n  \"status\": \"1\",\n  \"position\": 1\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Sort Players [ADMIN/MOD]",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/selected-players/sortBy", "host": ["{{baseUrl}}"], "path": ["api", "selected-players", "sortBy"] },
-            "body": {
-              "mode": "raw",
-              "raw": "[\n  { \"id\": 1001, \"position\": 1 },\n  { \"id\": 1002, \"position\": 2 }\n]",
-              "options": { "raw": { "language": "json" } }
-            },
-            "description": "Body is a raw array (not wrapped in object)."
-          }
-        },
-        {
-          "name": "Delete Player [ADMIN/MOD]",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/selected-players/delete/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "selected-players", "delete", ":id"],
-              "variable": [{ "key": "id", "value": "PLAYER_ID_HERE" }]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "11 - App Settings",
-      "description": "Global app configuration. ADMIN only.",
-      "item": [
-        {
-          "name": "Get App Settings [ADMIN]",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/app-settings/find", "host": ["{{baseUrl}}"], "path": ["api", "app-settings", "find"] }
-          }
-        },
-        {
-          "name": "Update App Settings [ADMIN]",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/app-settings/update", "host": ["{{baseUrl}}"], "path": ["api", "app-settings", "update"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Sports App\",\n  \"uniqueId\": \"com.example.sportsapp\",\n  \"status\": \"1\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"notificationSettings\": {\n    \"android\": {\n      \"enabled\": true\n    },\n    \"ios\": {\n      \"enabled\": true\n    }\n  },\n  \"apiSettings\": {\n    \"sport\": {\n      \"baseUrl\": \"https://api.sportmonks.com/v3/football\",\n      \"apiKey\": \"YOUR_API_KEY\"\n    }\n  },\n  \"socialMedia\": {\n    \"facebook\": \"https://facebook.com/sportsapp\",\n    \"instagram\": \"https://instagram.com/sportsapp\",\n    \"twitter\": \"https://twitter.com/sportsapp\",\n    \"telegram\": \"https://t.me/sportsapp\",\n    \"youtube\": \"https://youtube.com/sportsapp\"\n  },\n  \"androidSettings\": {\n    \"privacyPolicy\": \"https://example.com/privacy\",\n    \"termsConditions\": \"https://example.com/terms\",\n    \"forceUpdate\": false\n  },\n  \"iosSettings\": {\n    \"privacyPolicy\": \"https://example.com/privacy\",\n    \"termsConditions\": \"https://example.com/terms\",\n    \"forceUpdate\": false\n  },\n  \"ip\": \"0.0.0.0\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Reset App Settings [ADMIN]",
-          "request": {
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/app-settings/reset", "host": ["{{baseUrl}}"], "path": ["api", "app-settings", "reset"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "12 - General Settings",
-      "description": "Site-level general settings.",
-      "item": [
-        {
-          "name": "Get General Settings",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/general-settings/get", "host": ["{{baseUrl}}"], "path": ["api", "general-settings", "get"] }
-          }
-        },
-        {
-          "name": "Update General Settings",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/general-settings/update", "host": ["{{baseUrl}}"], "path": ["api", "general-settings", "update"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"company_name\": \"Sports Co.\",\n  \"site_title\": \"Sports App\",\n  \"timezone\": \"UTC\",\n  \"language\": \"en\",\n  \"terms\": \"https://example.com/terms\",\n  \"policy\": \"https://example.com/privacy\",\n  \"contact_us\": \"support@example.com\",\n  \"facebook\": \"https://facebook.com/sportsapp\",\n  \"youtube\": \"https://youtube.com/sportsapp\",\n  \"instagram\": \"https://instagram.com/sportsapp\",\n  \"site_logo\": \"https://example.com/logo.png\",\n  \"site_icon\": \"https://example.com/icon.png\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        },
-        {
-          "name": "Reset General Settings",
-          "request": {
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/general-settings/reset", "host": ["{{baseUrl}}"], "path": ["api", "general-settings", "reset"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "13 - Contact Us",
-      "description": "Contact form submissions.",
-      "item": [
-        {
-          "name": "Submit Contact Form",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/contact-us/contact-us", "host": ["{{baseUrl}}"], "path": ["api", "contact-us", "contact-us"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\",\n  \"name\": \"John Doe\",\n  \"subject\": \"App Issue\",\n  \"message\": \"I can't access the live stream for today's match.\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "description": "Note: full path is /api/contact-us/contact-us (duplication in route definition)."
-          }
-        },
-        {
-          "name": "Get All Contact Submissions [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/contact-us/contact-us", "host": ["{{baseUrl}}"], "path": ["api", "contact-us", "contact-us"] }
-          }
-        },
-        {
-          "name": "Get Contact Submission by ID [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/contact-us/contact-us/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "contact-us", "contact-us", ":id"],
-              "variable": [{ "key": "id", "value": "CONTACT_ID_HERE" }]
-            }
-          }
-        },
-        {
-          "name": "Delete Contact Submission [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/contact-us/contact-us/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "contact-us", "contact-us", ":id"],
-              "variable": [{ "key": "id", "value": "CONTACT_ID_HERE" }]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "14 - Sport Monk (Proxy)",
-      "description": "Proxied SportMonks API endpoints with Redis caching.",
-      "item": [
-        {
-          "name": "Get Formatted Fixtures by Date",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/sport-monk/fixtures/formatted", "host": ["{{baseUrl}}"], "path": ["api", "sport-monk", "fixtures", "formatted"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"date\": \"2024-09-01\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "description": "Returns fixtures for the given date from SportMonks. Results are Redis-cached."
-          }
-        },
-        {
-          "name": "SportMonks Wildcard Proxy [PUBLIC]",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/football/v3/fixtures?filters=fixtureDate:2024-09-01",
-              "host": ["{{baseUrl}}"],
-              "path": ["football", "v3", "fixtures"],
-              "query": [{ "key": "filters", "value": "fixtureDate:2024-09-01" }]
-            },
-            "description": "Root-level wildcard proxy. Any /football/v3/* path proxied to SportMonks. Results cached in Redis."
-          }
-        }
-      ]
-    },
-    {
-      "name": "15 - Rapid Football (Proxy)",
-      "description": "RapidAPI Football proxy endpoints.",
-      "item": [
-        {
-          "name": "Get Formatted Fixtures by Date",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/api/rapid-football/fixtures/formatted", "host": ["{{baseUrl}}"], "path": ["api", "rapid-football", "fixtures", "formatted"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"date\": \"2024-09-01\"\n}",
-              "options": { "raw": { "language": "json" } }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "16 - CricBuzz (Proxy)",
-      "description": "CricBuzz RapidAPI proxy. Wildcard path after /fixtures/.",
-      "item": [
-        {
-          "name": "Get Cricket Fixtures (Wildcard)",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/cricbuzz/fixtures/matches/v1/recent", "host": ["{{baseUrl}}"], "path": ["api", "cricbuzz", "fixtures", "matches", "v1", "recent"] },
-            "description": "Any path after /api/cricbuzz/fixtures/ is forwarded to CricBuzz RapidAPI."
-          }
-        },
-        {
-          "name": "Get Cricket Match Details",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/cricbuzz/fixtures/mcenter/v1/:matchId",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "cricbuzz", "fixtures", "mcenter", "v1", ":matchId"],
-              "variable": [{ "key": "matchId", "value": "MATCH_ID_HERE" }]
-            }
-          }
-        }
+
       ]
     }
+
   ]
 }

@@ -16,9 +16,11 @@ import rapidApiRoute from "../features/rapidFootball/route";
 import cricbuzzApiRoute from "../features/cricbuzz/route";
 import selectedTeamRoutes from "../features/selectedTeams/route";
 import selectedPlayerRoutes from "../features/selectedPlayers/route";
+import { verifyWebApi } from "../middlewares/authenticate";
 
 const router = Router();
 
+router.use(verifyWebApi);
 router.use("/user", userRoutes);
 router.use("/app-settings", appSettingsRoutes);
 router.use("/live-match", liveMatchRoutes);
