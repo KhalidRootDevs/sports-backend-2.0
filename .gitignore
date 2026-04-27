@@ -1,4 +1,16 @@
-node_modules/
-dist/
-.env*.local
-folder-structure.txt
+/node_modules
+project_structure.txt
+/uploads
+/dist
+
+# env files (can opt-in for committing if needed)
+.env
+.env*
+
+# Except this one
+!.env.example
+!.env.sample
+
+# Logs
+logs
+*.log
