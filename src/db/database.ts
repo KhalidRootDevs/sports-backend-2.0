@@ -8,9 +8,9 @@ const mongoURI = process.env.DEV_DATABASE_URL || 'mongodb://localhost:27017/my-p
 const connectDB = async () => {
   try {
     await mongoose.connect(mongoURI);
-    console.log('🟢 MongoDB connected successfully');
+    console.log('🌱 MongoDB connected successfully');
   } catch (error) {
-    console.error('🔴 MongoDB connection error:', error);
+    console.error('❗ MongoDB connection error:', error);
     process.exit(1);
   }
 };

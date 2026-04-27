@@ -4,7 +4,7 @@ import { querySchema } from '../../types';
 import { handleResponse } from '../../utils/helper';
 import SelectedLeagues from './model';
 import { selectedLeaguesSchema } from './validator';
-import { fetchFootballData } from '../sportsMonk/services';
+import { monksFootballUrl } from '../../lib/axios';
 
 // Get all selected leagues
 export const allSelectedLeagues = async (req: Request, res: Response, next: NextFunction) => {
@@ -160,7 +160,13 @@ export const searchLeagues = async (req: Request, res: Response, next: NextFunct
       return res.status(400).json(handleResponse(400, 'Search query is required', null));
     }
 
-    const { data } = await fetchFootballData(`/leagues/search/${encodeURIComponent(search_query)}`);
+    console.log('Searching for leagues with query:', search_query);
+
+    const { data } = await monksFootballUrl.get(
+      `/leagues/search/${encodeURIComponent(search_query)}`
+    );
+
+    console.log('Received data from sports API:', data);
     const filtered =
       data.length > 0
         ? data.map((d: any) => ({ id: d.id, name: d.name, logo: d.image_path }))

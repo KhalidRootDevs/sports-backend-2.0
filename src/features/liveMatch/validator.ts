@@ -24,7 +24,7 @@ export const liveMatchSchema = z.object({
   id: z.number().int(),
   fixture_id: z.number().optional(),
   match_title: z.string().min(1, 'Match title is required'),
-  match_time: z.string().min(1, 'Match time is required'),
+  match_time: z.number().min(1, 'Match time is required'),
   time: z.string().min(1, 'Time is required'),
   is_hot: z.number().default(0),
   status: z.string().default('1'),

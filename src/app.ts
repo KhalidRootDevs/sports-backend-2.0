@@ -2,7 +2,7 @@ import cookieParser from 'cookie-parser';
 import express, { Application, Request, Response } from 'express';
 import cors, { CorsOptions } from 'cors';
 import router from './router';
-import { redisCache } from './features/redis/services';
+import { redisCachingMiddleware } from './features/redis/services';
 import { monksFootballV3Data } from './features/sportsMonk/services';
 import { errorMiddleware, loggerMiddleware, notFoundMiddleware } from './utils/logger';
 import configs from './config/cors';
@@ -35,7 +35,7 @@ app.get('/', (req: Request, res: Response) => {
 // API Routes
 app.use('/api', router);
 // Sports routes
-app.get('/football/v3/*', redisCache.cachingMiddleware(), monksFootballV3Data);
+app.get('/football/v3/*', redisCachingMiddleware(), monksFootballV3Data);
 // 404 Routes
 app.use(notFoundMiddleware);
 // Error middleware

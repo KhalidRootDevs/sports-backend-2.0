@@ -5,8 +5,8 @@ import { NextFunction, Request, Response } from 'express';
 import { dbActions } from '../../db/dbActions';
 import SelectedLeagues from '../selectedLeagues/model';
 
-const baseUrl = process.env.SPORTMONKS_FOOTBALL_URL || '';
-const authorizationToken = process.env.SPORTMONKS_TOKEN || '';
+const baseUrl = process.env.CACHE_SERVER_URL_SPORTMONK || '';
+const authorizationToken = process.env.CACHE_SERVER_TOKEN || '';
 
 export async function fetchFootballData(endpoint: string) {
   const url = `${baseUrl}${endpoint}`;
