@@ -152,11 +152,8 @@ export const searchLeagues = async (req: Request, res: Response, next: NextFunct
       return res.status(400).json(handleResponse(400, "Search query is required", null));
     }
 
-    console.log("Searching for leagues with query:", search_query);
-
     const { data } = await monksFootballUrl.get(`/leagues/search/${encodeURIComponent(search_query)}`);
 
-    console.log("Received data from sports API:", data);
     const filtered = data.length > 0 ? data.map((d: any) => ({ id: d.id, name: d.name, logo: d.image_path })) : data;
 
     res.status(200).json(handleResponse(200, "League search results", filtered));

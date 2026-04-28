@@ -14,15 +14,15 @@ export const rapidApiFootballUrl: AxiosInstance = axios.create({
 });
 
 export const monksFootballUrl: AxiosInstance = axios.create({
-  baseURL: process.env["SPORTMONKS_FOOTBALL_URL"],
+  baseURL: process.env["CACHE_SERVER_URL_SPORTMONK"],
   timeout: TIMEOUT,
-  headers: { ...JSON_HEADERS, token: process.env["SPORTMONKS_API_TOKEN"] }
+  headers: { ...JSON_HEADERS, token: process.env["CACHE_SERVER_TOKEN"] }
 });
 
 export const monksFootballUrl4: AxiosInstance = axios.create({
-  baseURL: process.env["SPORTMONKS_FOOTBALL_URL_V4"],
+  baseURL: process.env["CACHE_SERVER_URL_SPORTMONK_V4"],
   timeout: TIMEOUT,
-  headers: { ...JSON_HEADERS, token: process.env["SPORTMONKS_API_TOKEN"] }
+  headers: { ...JSON_HEADERS, token: process.env["CACHE_SERVER_TOKEN"] }
 });
 
 export const proxyCheckUrl: AxiosInstance = axios.create({

@@ -4,6 +4,7 @@ import { querySchema } from "../../types";
 import { handleResponse } from "../../utils/helper";
 import { fetchFootballData } from "./services";
 import SelectedLeagues from "../selectedLeagues/model";
+import { monksFootballUrl } from "../../lib/axios";
 
 export const getFixtureMonks = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -20,11 +21,11 @@ export const getFixtureMonks = async (req: Request, res: Response, next: NextFun
 
     try {
       while (hasMore) {
-        const response = await fetchFootballData(
+        const response = await monksFootballUrl.get(
           `/fixtures/date/${date}?include=league.country;round.stage;participants;state;scores;periods&${page}`
         );
 
-        fixtures = [...fixtures, ...response?.data];
+        fixtures = [...fixtures, ...response?.data?.data];
         hasMore = response?.data?.pagination?.has_more;
         page += 1;
       }

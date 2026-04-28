@@ -4,6 +4,7 @@ import { handleResponse } from "../../utils/helper";
 import { dbActions } from "../../db/dbActions";
 import SelectedPlayer from "./model";
 import { fetchFootballData } from "../sportsMonk/services";
+import { monksFootballUrl } from "../../lib/axios";
 
 const CREATE_ALLOWED = new Set([
   "id",
@@ -108,13 +109,13 @@ export const deletePlayer = async (req: Request, res: Response, next: NextFuncti
       return res.status(400).json(handleResponse(400, "Invalid ID"));
     }
     const isExist = await dbActions.read(SelectedPlayer, {
-      query: { id: parseInt(id) }
+      query: { _id: req.params.id }
     });
     if (!isExist) {
       return res.status(404).json(handleResponse(404, "Player not found"));
     }
     await dbActions.delete(SelectedPlayer, {
-      query: { id: parseInt(id) }
+      query: { _id: req.params.id }
     });
     return res.status(200).json(handleResponse(200, "Player deleted successfully"));
   } catch (err) {
@@ -152,7 +153,7 @@ export const searchPlayers = async (req: Request, res: Response, next: NextFunct
       return res.status(400).json(handleResponse(400, "Search query is required", null));
     }
 
-    const { data } = await fetchFootballData(`/players/search/${encodeURIComponent(search_query)}`);
+    const { data } = await monksFootballUrl.get(`/players/search/${encodeURIComponent(search_query)}`);
 
     const filtered = data.length > 0 ? data.map((d: any) => ({ id: d.id, name: d.name, logo: d.image_path })) : data;
 
