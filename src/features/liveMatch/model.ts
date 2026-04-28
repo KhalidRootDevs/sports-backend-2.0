@@ -45,10 +45,8 @@ const matchSchema = new Schema<IMatch>(
       required: [true, "time is required"]
     },
     is_hot: {
-      type: Number,
-      min: 0,
-      max: 3,
-      default: 0
+      type: Boolean,
+      default: false
     },
     status: {
       type: Boolean,

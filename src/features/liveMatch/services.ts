@@ -4,11 +4,6 @@ import { generateRandomId } from "../../utils";
 export const createStreaming = (matchData: any) => {
   return (
     matchData?.streaming_sources?.map((source: any) => {
-      const headerObject: Record<string, string> = {};
-
-      for (const item of source?.headers || []) {
-        headerObject[item.key] = item.value;
-      }
       return {
         id: generateRandomId(15),
         stream_title: source?.stream_title,
@@ -20,7 +15,7 @@ export const createStreaming = (matchData: any) => {
         landscape_watermark: source?.landscape_watermark,
         stream_url: source?.stream_url,
         root_streams: source?.root_streams,
-        headers: JSON.stringify(headerObject),
+        headers: source?.headers,
         stream_key: source?.stream_key,
         stream_status: source?.stream_status
       };
